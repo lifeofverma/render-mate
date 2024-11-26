@@ -51,6 +51,7 @@ The tool provides comprehensive details about each file in the list:
 - **Progress:** Displays the progress of the render for each file as a percentage.
 - **Status:** Indicates the current render state:
   - `Complete`: Render finished successfully.
+  - `On Queue`: The render is waiting in the queue to start.
   - `In Progress`: Render is ongoing.
   - `Error`: Render encountered an issue.
   - `Paused`: Render is paused.
