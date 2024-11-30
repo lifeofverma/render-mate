@@ -1,4 +1,4 @@
-# Project Name 
+# **Project Name**
 AutoNukeRender
 
 ## **Project Description**
