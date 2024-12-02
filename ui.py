@@ -1,8 +1,15 @@
+# Import modules
 import sys
 from getpass import getuser
+
+# Importing third party modules
 from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
 from PySide2.QtGui import QPixmap
 from PySide2.QtCore import Qt 
+
+# Importing custom modules
+from components.components import NUKE_ICON, USER_ICON, ADD_ICON, PAUSE_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON
+
 
 class RenderMate(QMainWindow):
     def __init__(self):
@@ -26,14 +33,13 @@ class RenderMate(QMainWindow):
         self.header = QWidget()
         self.header.setFixedSize(1500,100)
         self.header.setStyleSheet("background-color: #1d1d1d;")
-
-
         self.nuke_icon_label = QLabel()
         self.user_icon_label = QLabel()
         self.user_name = QLabel(getuser())
+        self.user_name.setStyleSheet("color: ")
         self.tool_name = QLabel("RenderMate")
-        nuke_icon = QPixmap("icons/nuke_red_icon.png")
-        user_icon = QPixmap("icons/user_icon.png")
+        nuke_icon = QPixmap(NUKE_ICON)
+        user_icon = QPixmap(USER_ICON)
         scaled_nuke_icon = nuke_icon.scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation )
         scaled_user_icon = user_icon.scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation)
         self.nuke_icon_label.setPixmap(scaled_nuke_icon)
