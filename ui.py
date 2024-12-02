@@ -4,7 +4,7 @@ from getpass import getuser
 
 # Importing third party modules
 from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
-from PySide2.QtGui import QPixmap
+from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt 
 
 # Importing custom modules
@@ -36,14 +36,15 @@ class RenderMate(QMainWindow):
         self.nuke_icon_label = QLabel()
         self.user_icon_label = QLabel()
         self.user_name = QLabel(getuser())
-        self.user_name.setStyleSheet("color: ")
+        self.user_name.setStyleSheet("color: #f24726")
         self.tool_name = QLabel("RenderMate")
-        nuke_icon = QPixmap(NUKE_ICON)
-        user_icon = QPixmap(USER_ICON)
-        scaled_nuke_icon = nuke_icon.scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation )
-        scaled_user_icon = user_icon.scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation)
-        self.nuke_icon_label.setPixmap(scaled_nuke_icon)
-        self.user_icon_label.setPixmap(scaled_user_icon)
+        self.tool_name.setStyleSheet("color: white")
+        # nuke_icon = QPixmap(NUKE_ICON)
+        # user_icon = QPixmap(USER_ICON)
+        # scaled_nuke_icon = QPixmap(NUKE_ICON).scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation )
+        # scaled_user_icon = QPixmap(USER_ICON).scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation)
+        self.nuke_icon_label.setPixmap(QPixmap(NUKE_ICON).scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation ))
+        self.user_icon_label.setPixmap(QPixmap(USER_ICON).scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation))
 
         self.header_layout = QHBoxLayout()
         self.header_layout.addWidget(self.nuke_icon_label)
@@ -59,7 +60,10 @@ class RenderMate(QMainWindow):
         self.side_bar = QWidget()
         self.side_bar.setStyleSheet("background-color: #323232;")
 
-        self.add_button = QPushButton("Add")
+        self.add_button = QPushButton("")
+        self.add_button.setIcon(QIcon(ADD_ICON))
+        self.add_button.setStyleSheet("background: transparent; border: none;")
+        self.add_button.clicked.connect(self.on_button_click)
         self.start_all = QPushButton("Start")
         self.pause_all = QPushButton("Pause")
         self.remove_all = QPushButton("Remove")
@@ -101,6 +105,8 @@ class RenderMate(QMainWindow):
         main_layout.addLayout(self.midwidgetlayout)
         self.central_widget.setLayout(main_layout) 
 
+    def on_button_click(self):
+        print("hello")
 
 
 
