@@ -1,14 +1,20 @@
 # Import modules
 import sys
 from getpass import getuser
-
+import os
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
+from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt 
 
 # Importing custom modules
-from components.components import NUKE_ICON, USER_ICON, ADD_ICON, PAUSE_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON
+from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, PAUSE_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON
+
+
+
+
+from pprint import pprint
+
 
 
 class RenderMate(QMainWindow):
@@ -17,32 +23,23 @@ class RenderMate(QMainWindow):
 
 
         self.setWindowTitle("RenderMate V1.0.0")
-        self.setStyleSheet("background-color: #0f0f0f;")
+        # self.setFixedSize(800, 200)
         self.RV_playerMenu = QMenuBar()        
         self.RV_playerMenu.addMenu("RV Player Path")
-        self.RV_playerMenu.setStyleSheet("""QMenuBar{color: white;} QMenuBar::item{background-color: #1d1d1d;} QMenuBar::item:selected{background-color:#1d1d1d;} QMenuBar::item:hover{color:#0f0f0f;}""")
         self.setMenuBar(self.RV_playerMenu)
-
         self.central_widget = QWidget()
-        self.central_widget.setStyleSheet("background-color: #0f0f0f;")
         self.setCentralWidget(self.central_widget)
 
 
 
         # header widget starts from here
         self.header = QWidget()
-        self.header.setFixedSize(1500,100)
         self.header.setStyleSheet("background-color: #1d1d1d;")
+        # self.header.setFixedSize(1000,100)
         self.nuke_icon_label = QLabel()
         self.user_icon_label = QLabel()
         self.user_name = QLabel(getuser())
-        self.user_name.setStyleSheet("color: #f24726")
         self.tool_name = QLabel("RenderMate")
-        self.tool_name.setStyleSheet("color: white")
-        # nuke_icon = QPixmap(NUKE_ICON)
-        # user_icon = QPixmap(USER_ICON)
-        # scaled_nuke_icon = QPixmap(NUKE_ICON).scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation )
-        # scaled_user_icon = QPixmap(USER_ICON).scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation)
         self.nuke_icon_label.setPixmap(QPixmap(NUKE_ICON).scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation ))
         self.user_icon_label.setPixmap(QPixmap(USER_ICON).scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation))
 
@@ -59,11 +56,8 @@ class RenderMate(QMainWindow):
 
         self.side_bar = QWidget()
         self.side_bar.setStyleSheet("background-color: #323232;")
-
-        self.add_button = QPushButton("")
-        self.add_button.setIcon(QIcon(ADD_ICON))
-        self.add_button.setStyleSheet("background: transparent; border: none;")
-        self.add_button.clicked.connect(self.on_button_click)
+        self.add_button = QPushButton("add")
+        self.add_button.clicked.connect(self.add_files)
         self.start_all = QPushButton("Start")
         self.pause_all = QPushButton("Pause")
         self.remove_all = QPushButton("Remove")
@@ -80,33 +74,66 @@ class RenderMate(QMainWindow):
 
 
 
-        self.test_table = QWidget()
-        self.test_table.setStyleSheet("background-color: black;")
-        self.side_bar.setFixedSize(500,500)
-        self.test_table.setFixedSize(500,500)
+        self.property_widget = QTableWidget()
+        self.property_widget.setColumnCount(6)
+        self.property_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Operations"]) 
+        self.property_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.property_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.property_widget.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        self.property_widget.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch) 
+        self.property_widget.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch) 
+        self.property_widget.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
+        self.property_widget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         
-        self.midwidgetlayout = QHBoxLayout()
-        self.midwidgetlayout.addWidget(self.side_bar)
-        self.midwidgetlayout.addWidget(self.test_table)
+        self.hbox_layout = QHBoxLayout()
+        self.hbox_layout.addWidget(self.side_bar)
+        self.hbox_layout.addWidget(self.property_widget)
 
 
-        # self.vlayout = QVBoxLayout()
-        # self.vlayout.addWidget(self.header)
-        # self.vlayout.addLayout(self.midwidgetlayout)
+        self.operation_widget = QWidget()
+        self.rvbtn = QPushButton("RV")
+        self.rvbtn.setMinimumHeight(40)
+        self.nuke_btn = QPushButton("nuke")
+        self.start_btn = QPushButton("start")
+        self.stop_btn = QPushButton("stop")
+        self.open_dir_btn = QPushButton("open dir")
+        self.pause_btn = QPushButton("pause")
 
+        self.op_widget_layout = QHBoxLayout()
+        self.op_widget_layout.addWidget(self.rvbtn)
+        self.op_widget_layout.addWidget(self.nuke_btn)
+        self.op_widget_layout.addWidget(self.start_btn)
+        self.op_widget_layout.addWidget(self.stop_btn)
+        self.op_widget_layout.addWidget(self.open_dir_btn)
+        self.op_widget_layout.addWidget(self.pause_btn)
 
+        self.operation_widget.setLayout(self.op_widget_layout)        
+        
 
 
 
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.header)
-        main_layout.addLayout(self.midwidgetlayout)
+        main_layout.addLayout(self.hbox_layout)
         self.central_widget.setLayout(main_layout) 
 
-    def on_button_click(self):
-        print("hello")
+    def add_files(self):
+        files =  list(QFileDialog.getOpenFileNames(None , "Select a nuke file", r"D:\GamutX\Render_Mate\Nuke_files" , "Nuke Files(*.nk)")[0])
+        files_path = []
+        files_name = []
+
+        for file in files:
+            files_path.append(os.path.dirname(file))
+            files_name.append(os.path.basename(file))
+
+        self.property_widget.setRowCount(len(files_path))
+
+        for i in range(len(files_path)):
+            self.property_widget.setItem(i, 0 , QTableWidgetItem(files_path[i]))
+            self.property_widget.setItem(i, 1 , QTableWidgetItem(files_name[i]))
+            self.property_widget.setCellWidget(i, 5 , self.operation_widget )
 
 
 
@@ -117,4 +144,3 @@ if __name__ == "__main__":
     ui = RenderMate()
     ui.show()
     sys.exit(app.exec_())
-    
