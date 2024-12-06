@@ -52,17 +52,28 @@ class RenderMate(QMainWindow):
 
 
 
+
+
+
+        #############################################################################################################################################
+
+        # Sidebar widget setup
         self.side_bar = QWidget()
         self.side_bar.setStyleSheet("background-color: #323232;")
+        
+        # Initialize buttons for sidebar
         self.add_button = QPushButton("add")
-        self.add_button.clicked.connect(self.add_files)
         self.start_all = QPushButton("Start")
         self.pause_all = QPushButton("Pause")
         self.remove_all = QPushButton("Remove")
-        self.remove_all.clicked.connect(self.remove)
         self.remove_selected = QPushButton("Remove Selected")
-        self.remove_selected.clicked.connect(self.removeselected)
 
+        #adding functions to buttons
+        self.add_button.clicked.connect(self.add_files_to_table)
+        self.remove_all.clicked.connect(self.clear_table)
+        self.remove_selected.clicked.connect(self.remove_selected_rows)
+
+        # Layout for sidebar buttons
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.addWidget(self.add_button)
         self.buttons_layout.addWidget(self.start_all)
@@ -70,26 +81,31 @@ class RenderMate(QMainWindow):
         self.buttons_layout.addWidget(self.remove_all)
         self.buttons_layout.addWidget(self.remove_selected)
         
-
+        # set Layout for sidebar buttons
         self.side_bar.setLayout(self.buttons_layout)
 
 
 
-        self.property_widget = QTableWidget()
-        self.property_widget.setColumnCount(6)
-        self.property_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Operations"]) 
-        self.property_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.property_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.property_widget.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        self.property_widget.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch) 
-        self.property_widget.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch) 
-        self.property_widget.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
-        self.property_widget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+
+
+        #############################################################################################################################################
+
+
+        # Property widget (table) setup
+        self.table_widget = QTableWidget()
+        self.table_widget.setColumnCount(6)
+        self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Operations"]) 
         
+        # Set header behavior for property widget
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        
+        # Table and sidebar layout setup
         self.hbox_layout = QHBoxLayout()
         self.hbox_layout.addWidget(self.side_bar)
-        self.hbox_layout.addWidget(self.property_widget)
+        self.hbox_layout.addWidget(self.table_widget)
 
+        # Main layout setup
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.header)
         main_layout.addLayout(self.hbox_layout)
@@ -98,75 +114,120 @@ class RenderMate(QMainWindow):
 
 
 
+    #############################################################################################################################################
+    
+    
+    def create_operation_row_widget(self):
+            """
+            Creates a QWidget containing multiple buttons for operations in the table rows.
+            Returns:
+                operation_row_widget (QWidget): A widget containing operation buttons.
+            """
+            operation_row_widget = QWidget()
 
-    def x(self):
-        self.operation_widget = QWidget()
-        self.rvbtn = QPushButton("RV")
-        self.rvbtn.setMinimumHeight(40)
-        self.nuke_btn = QPushButton("nuke")
-        self.nuke_btn.setMinimumHeight(40)
-        self.start_btn = QPushButton("start")
-        self.start_btn.setMinimumHeight(40)
-        self.stop_btn = QPushButton("stop")
-        self.stop_btn.setMinimumHeight(40)
-        self.open_dir_btn = QPushButton("open dir")
-        self.open_dir_btn.setMinimumHeight(40)
-        self.pause_btn = QPushButton("pause")
-        self.pause_btn.setMinimumHeight(40)
-        
-        self.op_widget_layout = QHBoxLayout()
-        self.op_widget_layout.addWidget(self.rvbtn)
-        self.op_widget_layout.addWidget(self.nuke_btn)
-        self.op_widget_layout.addWidget(self.start_btn)
-        self.op_widget_layout.addWidget(self.stop_btn)
-        self.op_widget_layout.addWidget(self.open_dir_btn)
-        self.op_widget_layout.addWidget(self.pause_btn)
+            # Initialize buttons
+            rv_button = QPushButton("RV")
+            rv_button.setMinimumHeight(40)
 
-        self.operation_widget.setLayout(self.op_widget_layout)        
+            nuke_button = QPushButton("Nuke")
+            nuke_button.setMinimumHeight(40)
 
-        return self.operation_widget
+            start_button = QPushButton("Start")
+            start_button.setMinimumHeight(40)
 
+            stop_button = QPushButton("Stop")
+            stop_button.setMinimumHeight(40)
 
+            open_render_dir_button = QPushButton("Open Render dir")
+            open_render_dir_button.setMinimumHeight(40)
 
+            pause_button = QPushButton("Pause")
+            pause_button.setMinimumHeight(40)
 
+            # Create horizontal layout for buttons
+            button_layout = QHBoxLayout()
+            button_layout.addWidget(rv_button)
+            button_layout.addWidget(nuke_button)
+            button_layout.addWidget(start_button)
+            button_layout.addWidget(stop_button)
+            button_layout.addWidget(open_render_dir_button)
+            button_layout.addWidget(pause_button)
 
+            # Set layout to the widget
+            operation_row_widget.setLayout(button_layout)
 
-
-
-
-
-    def add_files(self):
-        files =  list(QFileDialog.getOpenFileNames(None , "Select a nuke file", r"D:\GamutX\Render_Mate\Nuke_files" , "Nuke Files(*.nk)")[0])
-        files_path = []
-        files_name = []
-
-        for file in files:
-            files_path.append(os.path.dirname(file))
-            files_name.append(os.path.basename(file))
-
-        self.property_widget.setRowCount(len(files_path))
-
-        for i in range(len(files_path)):
-            path_item = QTableWidgetItem(files_path[i])
-            name_item = QTableWidgetItem(files_name[i])
-            path_item.setTextAlignment(Qt.AlignCenter)
-            name_item.setTextAlignment(Qt.AlignCenter)
-            self.property_widget.setItem(i, 0 , path_item)
-            self.property_widget.setItem(i, 1 , name_item)
-            self.property_widget.setCellWidget(i, 5 , self.x())
+            return operation_row_widget
 
 
 
 
 
-    def remove(self):
-        self.property_widget.setRowCount(0)
 
-    def removeselected(self):
-        seleccted_rows = self.property_widget.selectionModel().selectedRows()
+    def add_files_to_table(self):
+        """
+        Opens a file dialog to select Nuke files, 
+        extracts file paths and names, 
+        and populates them in the table widget.
+        """
+        # Open file dialog to select Nuke files
+        selected_files = list(QFileDialog.getOpenFileNames(
+            None, 
+            "Select Nuke Files", 
+            r"D:\GamutX\Render_Mate\Nuke_files", 
+            "Nuke Files (*.nk)"
+        )[0])
 
-        for row in sorted(seleccted_rows , reverse=True):
-            self.property_widget.removeRow(row.row())
+        # Separate file paths and names
+        file_paths = []
+        file_names = []
+
+        for file in selected_files:
+            file_paths.append(os.path.dirname(file))
+            file_names.append(os.path.basename(file))
+
+        # Set the number of rows in the table
+        self.table_widget.setRowCount(len(file_paths))
+
+        # Populate the table widget with file paths, names, and operation widgets
+        for row in range(len(file_paths)):
+            file_path_item = QTableWidgetItem(file_paths[row])
+            file_name_item = QTableWidgetItem(file_names[row])
+
+            # Align text to the center
+            file_path_item.setTextAlignment(Qt.AlignCenter)
+            file_name_item.setTextAlignment(Qt.AlignCenter)
+
+            # Set items and widgets in the respective columns
+            self.table_widget.setItem(row, 0, file_path_item)
+            self.table_widget.setItem(row, 1, file_name_item)
+            self.table_widget.setCellWidget(row, 5, self.create_operation_row_widget())
+
+
+
+    ######################################################################################
+    
+    
+    def clear_table(self):
+        """
+        Removes all rows from the table widget.
+        """
+        self.table_widget.setRowCount(0)
+
+
+    ######################################################################################
+    def remove_selected_rows(self):
+        """
+        Removes only the selected rows from the table widget.
+        """
+        # Get selected rows
+        selected_rows = self.table_widget.selectionModel().selectedRows()
+
+        # Remove rows in descending order to maintain row integrity
+        for row in sorted(selected_rows, reverse=True):
+            self.table_widget.removeRow(row.row())
+
+
+
 
 
 if __name__ == "__main__":
