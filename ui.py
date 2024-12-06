@@ -3,7 +3,7 @@ import sys
 from getpass import getuser
 import os
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt 
 
@@ -52,8 +52,6 @@ class RenderMate(QMainWindow):
 
 
 
-        # side bar starts from here 
-
         self.side_bar = QWidget()
         self.side_bar.setStyleSheet("background-color: #323232;")
         self.add_button = QPushButton("add")
@@ -61,7 +59,9 @@ class RenderMate(QMainWindow):
         self.start_all = QPushButton("Start")
         self.pause_all = QPushButton("Pause")
         self.remove_all = QPushButton("Remove")
+        self.remove_all.clicked.connect(self.remove)
         self.remove_selected = QPushButton("Remove Selected")
+        self.remove_selected.clicked.connect(self.removeselected)
 
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.addWidget(self.add_button)
@@ -69,6 +69,7 @@ class RenderMate(QMainWindow):
         self.buttons_layout.addWidget(self.pause_all)
         self.buttons_layout.addWidget(self.remove_all)
         self.buttons_layout.addWidget(self.remove_selected)
+        
 
         self.side_bar.setLayout(self.buttons_layout)
 
@@ -84,22 +85,35 @@ class RenderMate(QMainWindow):
         self.property_widget.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch) 
         self.property_widget.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
         self.property_widget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-
         
         self.hbox_layout = QHBoxLayout()
         self.hbox_layout.addWidget(self.side_bar)
         self.hbox_layout.addWidget(self.property_widget)
 
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.header)
+        main_layout.addLayout(self.hbox_layout)
+        self.central_widget.setLayout(main_layout) 
 
+
+
+
+
+    def x(self):
         self.operation_widget = QWidget()
         self.rvbtn = QPushButton("RV")
         self.rvbtn.setMinimumHeight(40)
         self.nuke_btn = QPushButton("nuke")
+        self.nuke_btn.setMinimumHeight(40)
         self.start_btn = QPushButton("start")
+        self.start_btn.setMinimumHeight(40)
         self.stop_btn = QPushButton("stop")
+        self.stop_btn.setMinimumHeight(40)
         self.open_dir_btn = QPushButton("open dir")
+        self.open_dir_btn.setMinimumHeight(40)
         self.pause_btn = QPushButton("pause")
-
+        self.pause_btn.setMinimumHeight(40)
+        
         self.op_widget_layout = QHBoxLayout()
         self.op_widget_layout.addWidget(self.rvbtn)
         self.op_widget_layout.addWidget(self.nuke_btn)
@@ -109,15 +123,17 @@ class RenderMate(QMainWindow):
         self.op_widget_layout.addWidget(self.pause_btn)
 
         self.operation_widget.setLayout(self.op_widget_layout)        
-        
+
+        return self.operation_widget
 
 
 
 
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.header)
-        main_layout.addLayout(self.hbox_layout)
-        self.central_widget.setLayout(main_layout) 
+
+
+
+
+
 
     def add_files(self):
         files =  list(QFileDialog.getOpenFileNames(None , "Select a nuke file", r"D:\GamutX\Render_Mate\Nuke_files" , "Nuke Files(*.nk)")[0])
@@ -131,12 +147,26 @@ class RenderMate(QMainWindow):
         self.property_widget.setRowCount(len(files_path))
 
         for i in range(len(files_path)):
-            self.property_widget.setItem(i, 0 , QTableWidgetItem(files_path[i]))
-            self.property_widget.setItem(i, 1 , QTableWidgetItem(files_name[i]))
-            self.property_widget.setCellWidget(i, 5 , self.operation_widget )
+            path_item = QTableWidgetItem(files_path[i])
+            name_item = QTableWidgetItem(files_name[i])
+            path_item.setTextAlignment(Qt.AlignCenter)
+            name_item.setTextAlignment(Qt.AlignCenter)
+            self.property_widget.setItem(i, 0 , path_item)
+            self.property_widget.setItem(i, 1 , name_item)
+            self.property_widget.setCellWidget(i, 5 , self.x())
 
 
 
+
+
+    def remove(self):
+        self.property_widget.setRowCount(0)
+
+    def removeselected(self):
+        seleccted_rows = self.property_widget.selectionModel().selectedRows()
+
+        for row in sorted(seleccted_rows , reverse=True):
+            self.property_widget.removeRow(row.row())
 
 
 if __name__ == "__main__":
