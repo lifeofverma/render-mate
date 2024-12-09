@@ -2,8 +2,11 @@
 import sys
 from getpass import getuser
 import os
+from pathlib import Path 
+import subprocess
+
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QMainWindow, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QApplication, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt 
 
@@ -34,7 +37,7 @@ class RenderMate(QMainWindow):
 
         # header widget starts from here
         self.header = QWidget()
-        self.header.setStyleSheet("background-color: #1d1d1d;")
+        # self.header.setStyleSheet("background-color: #1d1d1d;")
         # self.header.setFixedSize(1000,100)
         self.nuke_icon_label = QLabel()
         self.user_icon_label = QLabel()
@@ -59,13 +62,13 @@ class RenderMate(QMainWindow):
 
         # Sidebar widget setup
         self.side_bar = QWidget()
-        self.side_bar.setStyleSheet("background-color: #323232;")
+        # self.side_bar.setStyleSheet("background-color: #323232;")
         
         # Initialize buttons for sidebar
         self.add_button = QPushButton("add")
-        self.start_all = QPushButton("Start")
-        self.pause_all = QPushButton("Pause")
-        self.remove_all = QPushButton("Remove")
+        self.start_all = QPushButton("Start all")
+        self.stop_all = QPushButton("stop all")
+        self.remove_all = QPushButton("Remove all")
         self.remove_selected = QPushButton("Remove Selected")
 
         #adding functions to buttons
@@ -77,7 +80,7 @@ class RenderMate(QMainWindow):
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.addWidget(self.add_button)
         self.buttons_layout.addWidget(self.start_all)
-        self.buttons_layout.addWidget(self.pause_all)
+        self.buttons_layout.addWidget(self.stop_all)
         self.buttons_layout.addWidget(self.remove_all)
         self.buttons_layout.addWidget(self.remove_selected)
         
@@ -93,8 +96,8 @@ class RenderMate(QMainWindow):
 
         # Property widget (table) setup
         self.table_widget = QTableWidget()
-        self.table_widget.setColumnCount(6)
-        self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Operations"]) 
+        self.table_widget.setColumnCount(7)
+        self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Operations" , "Launchers"]) 
         
         # Set header behavior for property widget
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -123,40 +126,77 @@ class RenderMate(QMainWindow):
             Returns:
                 operation_row_widget (QWidget): A widget containing operation buttons.
             """
-            operation_row_widget = QWidget()
+            self.operation_row_widget = QWidget()
 
-            # Initialize buttons
-            rv_button = QPushButton("RV")
-            rv_button.setMinimumHeight(40)
+            self.start_button = QPushButton("Start")
+            self.start_button.setMinimumHeight(40)
 
-            nuke_button = QPushButton("Nuke")
-            nuke_button.setMinimumHeight(40)
-
-            start_button = QPushButton("Start")
-            start_button.setMinimumHeight(40)
-
-            stop_button = QPushButton("Stop")
-            stop_button.setMinimumHeight(40)
-
-            open_render_dir_button = QPushButton("Open Render dir")
-            open_render_dir_button.setMinimumHeight(40)
-
-            pause_button = QPushButton("Pause")
-            pause_button.setMinimumHeight(40)
+            self.stop_button = QPushButton("Stop")
+            self.stop_button.setMinimumHeight(40)
 
             # Create horizontal layout for buttons
-            button_layout = QHBoxLayout()
-            button_layout.addWidget(rv_button)
-            button_layout.addWidget(nuke_button)
-            button_layout.addWidget(start_button)
-            button_layout.addWidget(stop_button)
-            button_layout.addWidget(open_render_dir_button)
-            button_layout.addWidget(pause_button)
+            self.button_layout = QHBoxLayout()
+            self.button_layout.addWidget(self.start_button)
+            self.button_layout.addWidget(self.stop_button)
 
             # Set layout to the widget
-            operation_row_widget.setLayout(button_layout)
+            self.operation_row_widget.setLayout(self.button_layout)
 
-            return operation_row_widget
+            return self.operation_row_widget
+
+
+
+
+
+    def create_launcher_row_widget(self):
+            """
+            Creates a QWidget containing multiple buttons for operations in the table rows.
+            Returns:
+                operation_row_widget (QWidget): A widget containing operation buttons.
+            """
+            self.launcher_row_widget = QWidget()
+
+            # Initialize buttons
+            self.rv_button = QPushButton("RV")
+            self.rv_button.setMinimumHeight(40)
+
+            self.nuke_button = QPushButton("Nuke")
+            self.nuke_button.clicked.connect(self.open_nuke_file)
+            self.nuke_button.setMinimumHeight(40)
+
+            self.open_render_dir_button = QPushButton("Open Render dir")
+            self.open_render_dir_button.setMinimumHeight(40)
+
+            # Create horizontal layout for buttons
+            self.button_layout = QHBoxLayout()
+            self.button_layout.addWidget(self.rv_button)
+            self.button_layout.addWidget(self.nuke_button)
+            self.button_layout.addWidget(self.open_render_dir_button)
+
+            # Set layout to the widget
+            self.launcher_row_widget.setLayout(self.button_layout)
+
+            return self.launcher_row_widget
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -201,6 +241,10 @@ class RenderMate(QMainWindow):
             self.table_widget.setItem(row, 0, file_path_item)
             self.table_widget.setItem(row, 1, file_name_item)
             self.table_widget.setCellWidget(row, 5, self.create_operation_row_widget())
+            self.table_widget.setCellWidget(row, 6, self.create_launcher_row_widget())
+            progress_bar = QProgressBar()
+            progress_bar.setValue(50)  # Set an initial value, you can modify it as needed
+            self.table_widget.setCellWidget(row, 3, progress_bar)
 
 
 
@@ -225,6 +269,17 @@ class RenderMate(QMainWindow):
         # Remove rows in descending order to maintain row integrity
         for row in sorted(selected_rows, reverse=True):
             self.table_widget.removeRow(row.row())
+
+
+    def open_nuke_file(self):
+        nuke_button_row = self.table_widget.indexAt(self.sender().parent().pos()).row()
+        file_path = self.table_widget.item(nuke_button_row , 0)
+        file_name = self.table_widget.item(nuke_button_row, 1)
+        nuke_file = Path(Path(file_path.text()) / file_name.text()).as_posix()
+
+        nuke_software_path = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
+        nukeX_args = "--nukex"
+        subprocess.Popen([f"{nuke_software_path}", nukeX_args , nuke_file ])
 
 
 
