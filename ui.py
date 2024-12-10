@@ -8,10 +8,10 @@ import subprocess
 # Importing third party modules
 from PySide2.QtWidgets import QApplication, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
-from PySide2.QtCore import Qt 
+from PySide2.QtCore import Qt , QSize
 
 # Importing custom modules
-from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, PAUSE_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON
+from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON
 
 
 
@@ -26,7 +26,7 @@ class RenderMate(QMainWindow):
 
 
         self.setWindowTitle("RenderMate V1.0.0")
-        # self.setFixedSize(800, 200)
+        self.setFixedSize(1600, 800)
         self.RV_playerMenu = QMenuBar()        
         self.RV_playerMenu.addMenu("RV Player Path")
         self.setMenuBar(self.RV_playerMenu)
@@ -62,14 +62,26 @@ class RenderMate(QMainWindow):
 
         # Sidebar widget setup
         self.side_bar = QWidget()
+        self.side_bar.setFixedWidth(100)
         # self.side_bar.setStyleSheet("background-color: #323232;")
         
         # Initialize buttons for sidebar
-        self.add_button = QPushButton("add")
+        self.add_button = QPushButton()
+        self.remove_selected = QPushButton("Remove Selected")
+        self.remove_all = QPushButton("Remove all")
         self.start_all = QPushButton("Start all")
         self.stop_all = QPushButton("stop all")
-        self.remove_all = QPushButton("Remove all")
-        self.remove_selected = QPushButton("Remove Selected")
+        
+
+        self.add_button.setStyleSheet("QPushButton { border: none; }")
+        self.add_button.setIconSize(QSize(48, 48)) 
+
+        # set buttons icons
+        self.add_button.setIcon(QIcon(ADD_ICON))
+        self.start_all.setIcon(QIcon(PLAY_ICON))
+        # self.stop_all.setIcon(stop)
+        self.remove_all.setIcon(QIcon(REMOVE_ICON))
+        self.remove_selected.setIcon(QIcon(REMOVE_SELECTED_ICON))
 
         #adding functions to buttons
         self.add_button.clicked.connect(self.add_files_to_table)
@@ -79,10 +91,12 @@ class RenderMate(QMainWindow):
         # Layout for sidebar buttons
         self.buttons_layout = QVBoxLayout()
         self.buttons_layout.addWidget(self.add_button)
-        self.buttons_layout.addWidget(self.start_all)
-        self.buttons_layout.addWidget(self.stop_all)
         self.buttons_layout.addWidget(self.remove_all)
         self.buttons_layout.addWidget(self.remove_selected)
+        self.buttons_layout.addWidget(self.start_all)
+        self.buttons_layout.addWidget(self.stop_all)
+        
+        
         
         # set Layout for sidebar buttons
         self.side_bar.setLayout(self.buttons_layout)
