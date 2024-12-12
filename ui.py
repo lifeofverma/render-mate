@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QApplication, QComboBox, QListWidget, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt , QSize
 
@@ -52,10 +52,6 @@ class RenderMate(QMainWindow):
         self.header_layout.addWidget(self.tool_name)
         self.header_layout.addWidget(self.user_name)
         self.header.setLayout(self.header_layout)
-
-
-
-
 
 
         #############################################################################################################################################
@@ -121,14 +117,6 @@ class RenderMate(QMainWindow):
 
 
 
-
-
-
-
-
-
-
-
         # Create individual layouts for each button and label pair
         self.add_layout = QVBoxLayout()
         self.add_layout.setSpacing(0)
@@ -174,82 +162,6 @@ class RenderMate(QMainWindow):
 
 
 
-
-
-
-
-   
-
-
-
-
-
-
-
-
-
-        # # Initialize buttons for sidebar
-        # self.add_button = QPushButton()
-        # self.remove_selected = QPushButton("Remove Selected")
-        # self.remove_all = QPushButton("Remove all")
-        # self.start_all = QPushButton("Start all")
-        # self.stop_all = QPushButton("stop all")
-        
-
-        # # self.add_button.setStyleSheet("QPushButton { border: none; }")
-        # self.add_button.setIconSize(QSize(48, 48)) 
-
-        # # set buttons icons
-        # self.add_button.setIcon(QIcon(ADD_ICON))
-        # self.start_all.setIcon(QIcon(PLAY_ICON))
-        # # self.stop_all.setIcon(stop)
-        # self.remove_all.setIcon(QIcon(REMOVE_ICON))
-        # self.remove_selected.setIcon(QIcon(REMOVE_SELECTED_ICON))
-
-        # #adding functions to buttons
-        # self.add_button.clicked.connect(self.add_files_to_table)
-        # self.remove_all.clicked.connect(self.clear_table)
-        # self.remove_selected.clicked.connect(self.remove_selected_rows)
-
-        # # Layout for sidebar buttons
-        # self.buttons_layout = QVBoxLayout()
-        # self.buttons_layout.addWidget(self.add_button)
-        # self.buttons_layout.addWidget(self.remove_all)
-        # self.buttons_layout.addWidget(self.remove_selected)
-        # self.buttons_layout.addWidget(self.start_all)
-        # self.buttons_layout.addWidget(self.stop_all)
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         #############################################################################################################################################
 
 
@@ -282,6 +194,7 @@ class RenderMate(QMainWindow):
     def create_operation_row_widget(self):
             """
             Creates a QWidget containing multiple buttons for operations in the table rows.
+            
             Returns:
                 operation_row_widget (QWidget): A widget containing operation buttons.
             """
@@ -313,9 +226,10 @@ class RenderMate(QMainWindow):
 
     def create_launcher_row_widget(self):
             """
-            Creates a QWidget containing multiple buttons for operations in the table rows.
+            Creates a QWidget containing multiple buttons for launcher in the table rows.
+            
             Returns:
-                operation_row_widget (QWidget): A widget containing operation buttons.
+                create_launcher_row_widget (QWidget): A widget containing operation buttons.
             """
             self.launcher_row_widget = QWidget()
 
@@ -355,6 +269,64 @@ class RenderMate(QMainWindow):
 
 
 
+    def get_list_of_write_nodes_name(self , file_path):
+        """
+        This function reads a Nuke script file (.nk) and extracts the names of all write nodes 
+        defined within the script. 
+
+        Parameters:
+        file_path (str): The path to the Nuke script file.
+
+        Returns:
+        list: A list of names of all write nodes found in the file.
+        """
+        write_node_names = []  # List to store names of all Write nodes
+
+        # Open the Nuke script file for reading
+        with open(file_path, 'r') as nuke_file:
+            nuke_file_data = nuke_file.readlines()
+
+            in_write_node = False  # Flag to track if we're inside a Write node
+            current_write_node_lines = []  # List to store lines of the current Write node
+
+            # Iterate through each line in the file
+            for line in nuke_file_data:
+                stripped_line = line.strip()
+
+                # Check for the beginning of a Write node and if We are inside a Write node
+                if stripped_line.startswith("Write {"):
+                    in_write_node = True
+
+                if in_write_node:
+                    current_write_node_lines.append(stripped_line) 
+
+                # When we reach the closing brace of a Write node, process it, Extract the name after 'name' Add the name to the list
+                if stripped_line == "}":
+                    for line_in_node in current_write_node_lines:
+                        if line_in_node.startswith("name "):
+                            write_node_name = line_in_node.split()[1]
+                            write_node_names.append(write_node_name)
+                            break
+
+                    # Reset for the next Write node
+                    in_write_node = False
+                    current_write_node_lines = []
+
+        # Return the list of Write node names
+        return write_node_names
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -381,8 +353,9 @@ class RenderMate(QMainWindow):
         extracts file paths and names, 
         and populates them in the table widget.
         """
+
         # Open file dialog to select Nuke files
-        selected_files = list(QFileDialog.getOpenFileNames(
+        self.selected_files = list(QFileDialog.getOpenFileNames(
             None, 
             "Select Nuke Files", 
             r"D:\GamutX\Render_Mate\Nuke_files", 
@@ -393,11 +366,11 @@ class RenderMate(QMainWindow):
         file_paths = []
         file_names = []
 
-        for file in selected_files:
+        for file in self.selected_files:
             file_paths.append(os.path.dirname(file))
             file_names.append(os.path.basename(file))
 
-        # Set the number of rows in the table
+        # Set the number of rows in the table to match the number of selected files
         self.table_widget.setRowCount(len(file_paths))
 
         # Populate the table widget with file paths, names, and operation widgets
@@ -418,6 +391,13 @@ class RenderMate(QMainWindow):
             progress_bar.setValue(50)  # Set an initial value, you can modify it as needed
             self.table_widget.setCellWidget(row, 3, progress_bar)
 
+        
+
+        for nuke_files in self.selected_files:
+            write_nodes_widget = QComboBox()
+            write_nodes_widget.addItems(self.get_list_of_write_nodes_name(nuke_files))
+            self.table_widget.setCellWidget(row, 2, write_nodes_widget)
+
 
 
     ######################################################################################
@@ -428,6 +408,14 @@ class RenderMate(QMainWindow):
         Removes all rows from the table widget.
         """
         self.table_widget.setRowCount(0)
+
+
+
+
+
+
+
+
 
 
     ######################################################################################
@@ -443,15 +431,47 @@ class RenderMate(QMainWindow):
             self.table_widget.removeRow(row.row())
 
 
-    def open_nuke_file(self):
-        nuke_button_row = self.table_widget.indexAt(self.sender().parent().pos()).row()
-        file_path = self.table_widget.item(nuke_button_row , 0)
-        file_name = self.table_widget.item(nuke_button_row, 1)
-        nuke_file = Path(Path(file_path.text()) / file_name.text()).as_posix()
 
-        nuke_software_path = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
-        nukeX_args = "--nukex"
-        subprocess.Popen([f"{nuke_software_path}", nukeX_args , nuke_file ])
+
+
+
+
+    ######################################################################################
+    def open_nuke_file(self):
+        """
+        Opens the selected Nuke file using the Nuke software.
+
+        This function determines which row in the table the 'Open in Nuke' button
+        was clicked, retrieves the file path and name, and launches Nuke with 
+        the selected script.
+        """
+
+        # Get the row of the clicked button within the table
+        selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+
+        # Retrieve the file path and file name from the respective table columns
+        file_path = self.table_widget.item(selected_row  , 0)
+        file_name = self.table_widget.item(selected_row , 1)
+
+        # Combine file path and file name to get the full path of the Nuke file
+        nuke_file_path  = Path(Path(file_path.text()) / file_name.text()).as_posix()
+
+        # Define the path to the Nuke executable and the required arguments
+        nuke_executable_path  = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
+        nukeX_arguments  = "--nukex"
+
+        subprocess.Popen([f"{nuke_executable_path}", nukeX_arguments , nuke_file_path  ])
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,0 @@
-
-        # self.RV_playerMenu.setStyleSheet("""QMenuBar{color: white;} QMenuBar::item{background-color: #1d1d1d;} QMenuBar::item:selected{background-color:#1d1d1d;} QMenuBar::item:hover{color:#0f0f0f;}""")
-        # self.setStyleSheet("background-color: #0f0f0f;")
-        # self.central_widget.setStyleSheet("background-color: #0f0f0f;")
-        self.user_name.setStyleSheet("color: #f24726")
-        self.tool_name.setStyleSheet("color: white")
-        self.add_button.setStyleSheet("background: transparent; border: none;")
-        self.test_table.setStyleSheet("background-color: black;")
