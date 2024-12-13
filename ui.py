@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QComboBox, QListWidget, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QApplication, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt , QSize
 
@@ -391,14 +391,24 @@ class RenderMate(QMainWindow):
             progress_bar.setValue(50)  # Set an initial value, you can modify it as needed
             self.table_widget.setCellWidget(row, 3, progress_bar)
 
-        
 
-        for nuke_files in self.selected_files:
+        # Set write nodes name in the respective columns
+        for row, nuke_file in enumerate(self.selected_files):
+            # Create a widget to display write nodes or a message and Fetch the list of write nodes from the Nuke file
             write_nodes_widget = QComboBox()
-            write_nodes_widget.addItems(self.get_list_of_write_nodes_name(nuke_files))
-            self.table_widget.setCellWidget(row, 2, write_nodes_widget)
+            write_node_names = self.get_list_of_write_nodes_name(nuke_file)
 
+            # Populate the combo box with the write nodes OR Set a QLabel with "No write nodes found" message
+            if write_node_names:
+                write_nodes_widget.addItems(write_node_names)
+                self.table_widget.setCellWidget(row, 2, write_nodes_widget)
+            
+            else:
+                no_nodes_label = QLabel("No write nodes found")
+                no_nodes_label.setAlignment(Qt.AlignCenter)
+                self.table_widget.setCellWidget(row, 2, no_nodes_label)
 
+            
 
     ######################################################################################
     
@@ -460,7 +470,7 @@ class RenderMate(QMainWindow):
         nuke_executable_path  = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
         nukeX_arguments  = "--nukex"
 
-        subprocess.Popen([f"{nuke_executable_path}", nukeX_arguments , nuke_file_path  ])
+        subprocess.Popen([f"{nuke_executable_path}", nukeX_arguments , nuke_file_path  ] , creationflags= subprocess.CREATE_NEW_CONSOLE)
 
 
 
