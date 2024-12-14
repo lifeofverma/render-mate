@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QApplication, QMessageBox, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt , QSize
 
@@ -204,6 +204,7 @@ class RenderMate(QMainWindow):
             self.start_button.setIcon(QIcon(OPERATION_PLAY_ICON))
             self.start_button.setIconSize(QSize(40, 40)) 
             self.start_button.setMinimumHeight(40)
+            self.start_button.clicked.connect(self.render_selected)  
 
             self.stop_button = QPushButton("")
             self.stop_button.setIcon(QIcon(OPERATION_STOP_ICON))
@@ -476,11 +477,48 @@ class RenderMate(QMainWindow):
 
 
 
+    def render_selected(self):
+        """
+        Trigger the rendering of the selected Nuke file with a chosen write node.
+
+        This method identifies the row in the table where the render operation was triggered, 
+        retrieves the corresponding file path and name, and renders the script using the 
+        selected write node from the combo box. If no write nodes are available, it shows 
+        a warning popup.
+
+        """
+        # Identify the table row where the button was clicked
+        selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+
+        # Retrieve file path and name from the selected row in the table
+        file_path = self.table_widget.item(selected_row  , 0)
+        file_name = self.table_widget.item(selected_row , 1)
+
+       # Construct the full path to the Nuke script and Path to the Nuke executable
+        nuke_file_path  = Path(Path(file_path.text()) / file_name.text()).as_posix()
+        nuke_executable_path  = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
+
+        # Retrieve the write node combo box from the selected row (column index 2)
+        write_nodes = self.table_widget.cellWidget(selected_row , 2)
+        
+        # Check if the combo box exists and is valid, Get the selected write node, Prepare the rendering command
+        if write_nodes and isinstance(write_nodes , QComboBox):
+            selected_write_node = write_nodes.currentText()
+            command = [nuke_executable_path, '-x' , '-X' , selected_write_node, nuke_file_path ]
+            subprocess.Popen(command)
+        
+        # Display a warning if no write nodes are found in the script
+        else:
+            msg_box = QMessageBox()
+            msg_box.setIcon(QMessageBox.Warning)
+            msg_box.setWindowTitle("No Write Nodes Found")
+            msg_box.setText("The selected script doesn't have any write nodes.")
+            msg_box.exec_()
 
 
-
-
-
+    # def stop_selected_render(self):
+    #     # Identify the table row where the button was clicked
+    #     selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
 
 
 
