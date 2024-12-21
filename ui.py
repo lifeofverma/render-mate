@@ -4,9 +4,10 @@ from getpass import getuser
 import os
 from pathlib import Path 
 import subprocess
+import json
 
 # Importing third party modules
-from PySide2.QtWidgets import QApplication, QMessageBox, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
+from PySide2.QtWidgets import QApplication, QInputDialog, QMessageBox, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt , QSize
 
@@ -28,10 +29,54 @@ class RenderMate(QMainWindow):
         self.setWindowTitle("RenderMate V1.0.0")
         self.setMinimumSize(1600, 800)
         self.menu_bar = QMenuBar()        
-        self.set_path = self.menu_bar.addMenu("Set Path")
         self.setMenuBar(self.menu_bar)
+        self.set_path = self.menu_bar.addMenu("Set Path")
+        self.set_nuke_path_menu = self.set_path.addAction("Set Nuke Path")
+        self.set_nuke_path_menu.triggered.connect(self.set_nuke_path)
+        self.set_rv_player_path_menu = self.set_path.addAction("Set RV Player Path")
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
+
+
+
+    def set_nuke_path(self):
+        nuke_path, ok = QInputDialog.getText(self, "Set Path", "Enter the nuke executable path:")
+
+        if ok:
+            home_dir = os.path.expanduser("~")
+            render_mate_dir = os.path.join(home_dir, "RenderMate")
+            json_file_path = os.path.join(render_mate_dir, "set_paths.json")
+
+
+            if not os.path.exists(render_mate_dir):
+                os.makedirs(render_mate_dir)
+
+            if not os.path.exists(json_file_path):
+                set_path = {"Nuke Path": "" , "RV Player Path":""}
+
+                with open(json_file_path , "w") as file:
+                    json.dump(set_path, file , indent=4 )
+
+            if os.path.exists(json_file_path):
+                with open(json_file_path , "r") as file:
+                    file_data = json.load(file)
+                    file_data["Nuke Path"] = nuke_path
+
+                with open(json_file_path, "w") as file:
+                    json.dump(file_data, file, indent=4)
+            
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -161,10 +206,7 @@ class RenderMate(QMainWindow):
         self.side_bar_widget.setLayout(self.side_bar_main_layout)
 
 
-
         #############################################################################################################################################
-
-
         # Property widget (table) setup
         self.table_widget = QTableWidget()
         self.table_widget.setColumnCount(7)
@@ -188,9 +230,10 @@ class RenderMate(QMainWindow):
 
 
 
+
+
+
     #############################################################################################################################################
-    
-    
     def create_operation_row_widget(self):
             """
             Creates a QWidget containing multiple buttons for operations in the table rows.
@@ -221,10 +264,7 @@ class RenderMate(QMainWindow):
 
             return self.operation_row_widget
 
-
-
-
-
+    ######################################################################################
     def create_launcher_row_widget(self):
             """
             Creates a QWidget containing multiple buttons for launcher in the table rows.
@@ -265,11 +305,7 @@ class RenderMate(QMainWindow):
 
             return self.launcher_row_widget
 
-
-
-
-
-
+    ######################################################################################
     def get_list_of_write_nodes_name(self , file_path):
         """
         This function reads a Nuke script file (.nk) and extracts the names of all write nodes 
@@ -315,39 +351,9 @@ class RenderMate(QMainWindow):
 
         # Return the list of Write node names
         return write_node_names
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ######################################################################################
     def add_files_to_table(self):
         """
         Opens a file dialog to select Nuke files, 
@@ -409,24 +415,13 @@ class RenderMate(QMainWindow):
                 no_nodes_label.setAlignment(Qt.AlignCenter)
                 self.table_widget.setCellWidget(row, 2, no_nodes_label)
 
-            
 
     ######################################################################################
-    
-    
     def clear_table(self):
         """
         Removes all rows from the table widget.
         """
         self.table_widget.setRowCount(0)
-
-
-
-
-
-
-
-
 
 
     ######################################################################################
@@ -440,12 +435,6 @@ class RenderMate(QMainWindow):
         # Remove rows in descending order to maintain row integrity
         for row in sorted(selected_rows, reverse=True):
             self.table_widget.removeRow(row.row())
-
-
-
-
-
-
 
     ######################################################################################
     def open_nuke_file(self):
@@ -473,10 +462,7 @@ class RenderMate(QMainWindow):
 
         subprocess.Popen([f"{nuke_executable_path}", nukeX_arguments , nuke_file_path  ] , creationflags= subprocess.CREATE_NEW_CONSOLE)
 
-
-
-
-
+    ######################################################################################
     def render_selected(self):
         """
         Trigger the rendering of the selected Nuke file with a chosen write node.
@@ -514,16 +500,6 @@ class RenderMate(QMainWindow):
             msg_box.setWindowTitle("No Write Nodes Found")
             msg_box.setText("The selected script doesn't have any write nodes.")
             msg_box.exec_()
-
-
-    # def stop_selected_render(self):
-    #     # Identify the table row where the button was clicked
-    #     selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
-
-
-
-
-
 
 if __name__ == "__main__":
     app = QApplication()

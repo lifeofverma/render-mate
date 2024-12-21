@@ -1,5 +1,5 @@
 # **Project Name**
-AutoNukeRender
+RenderMate
 
 ## **Project Description**
 AutoNukeRender is a tool designed to streamline the rendering process for multiple Nuke scripts without the need to open each file manually. It allows users to manage and execute renders for multiple Nuke scripts in a single, efficient workflow. 
