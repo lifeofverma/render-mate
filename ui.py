@@ -13,12 +13,8 @@ from PySide2.QtCore import Qt , QSize
 
 # Importing custom modules
 from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON, STOP_ICON, OPERATION_PLAY_ICON, OPERATION_STOP_ICON, OPEN_DIR_ICON, RV_ICON
-
-
-
-
-from pprint import pprint
-
+from modules.PathManager import PathManager
+from modules.NukeFileReader import GetNukeFileProperties
 
 
 class RenderMate(QMainWindow):
@@ -31,53 +27,15 @@ class RenderMate(QMainWindow):
         self.menu_bar = QMenuBar()        
         self.setMenuBar(self.menu_bar)
         self.set_path = self.menu_bar.addMenu("Set Path")
-        self.set_nuke_path_menu = self.set_path.addAction("Set Nuke Path")
-        self.set_nuke_path_menu.triggered.connect(self.set_nuke_path)
-        self.set_rv_player_path_menu = self.set_path.addAction("Set RV Player Path")
+        self.set_nuke_path_action = self.set_path.addAction("Set Nuke Path")
+        self.set_rv_player_path_action = self.set_path.addAction("Set RV Player Path")
+
+        self.set_nuke_path_action.triggered.connect(self.nuke_path_action)
+        self.set_rv_player_path_action.triggered.connect(self.rv_player_path_action)
+
+
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-
-
-
-    def set_nuke_path(self):
-        nuke_path, ok = QInputDialog.getText(self, "Set Path", "Enter the nuke executable path:")
-
-        if ok:
-            home_dir = os.path.expanduser("~")
-            render_mate_dir = os.path.join(home_dir, "RenderMate")
-            json_file_path = os.path.join(render_mate_dir, "set_paths.json")
-
-
-            if not os.path.exists(render_mate_dir):
-                os.makedirs(render_mate_dir)
-
-            if not os.path.exists(json_file_path):
-                set_path = {"Nuke Path": "" , "RV Player Path":""}
-
-                with open(json_file_path , "w") as file:
-                    json.dump(set_path, file , indent=4 )
-
-            if os.path.exists(json_file_path):
-                with open(json_file_path , "r") as file:
-                    file_data = json.load(file)
-                    file_data["Nuke Path"] = nuke_path
-
-                with open(json_file_path, "w") as file:
-                    json.dump(file_data, file, indent=4)
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         # header widget starts from here
@@ -216,6 +174,7 @@ class RenderMate(QMainWindow):
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         
+        
         # Table and sidebar layout setup
         self.hbox_layout = QHBoxLayout()
         self.hbox_layout.addWidget(self.side_bar_widget)
@@ -230,7 +189,9 @@ class RenderMate(QMainWindow):
 
 
 
-
+    def progress_bar_creator(self):
+        self.progress_bar = QProgressBar()
+        return self.progress_bar
 
 
     #############################################################################################################################################
@@ -288,70 +249,70 @@ class RenderMate(QMainWindow):
             self.nuke_button.clicked.connect(self.open_nuke_file)
             self.nuke_button.setMinimumHeight(40)
 
-            self.open_render_dir_button = QPushButton("")
-            self.open_render_dir_button.setFlat(True)
-            self.open_render_dir_button.setIcon(QIcon(OPEN_DIR_ICON))
-            self.open_render_dir_button.setIconSize(QSize(40, 40)) 
-            self.open_render_dir_button.setMinimumHeight(40)
+            self.open_render_dir = QPushButton("")
+            self.open_render_dir.setFlat(True)
+            self.open_render_dir.setIcon(QIcon(OPEN_DIR_ICON))
+            self.open_render_dir.setIconSize(QSize(40, 40)) 
+            self.open_render_dir.setMinimumHeight(40)
+            self.open_render_dir.clicked.connect(self.open_render_dir_button)
 
             # Create horizontal layout for buttons
             self.button_layout = QHBoxLayout()
             self.button_layout.addWidget(self.rv_button)
             self.button_layout.addWidget(self.nuke_button)
-            self.button_layout.addWidget(self.open_render_dir_button)
+            self.button_layout.addWidget(self.open_render_dir)
 
             # Set layout to the widget
             self.launcher_row_widget.setLayout(self.button_layout)
 
             return self.launcher_row_widget
 
-    ######################################################################################
-    def get_list_of_write_nodes_name(self , file_path):
+
+
+
+
+
+
+
+
+    # Define a function to prompt the user for the Nuke executable path and update it
+    def nuke_path_action(self):
         """
-        This function reads a Nuke script file (.nk) and extracts the names of all write nodes 
-        defined within the script. 
-
-        Parameters:
-        file_path (str): The path to the Nuke script file.
-
-        Returns:
-        list: A list of names of all write nodes found in the file.
+        Prompt the user to enter the Nuke executable path
+        and update it in the path configuration.
         """
-        write_node_names = []  # List to store names of all Write nodes
 
-        # Open the Nuke script file for reading
-        with open(file_path, 'r') as nuke_file:
-            nuke_file_data = nuke_file.readlines()
+        nuke_path, user_confirmed = QInputDialog.getText(self, "Set Nuke Path", "Enter the Nuke executable path:")
 
-            in_write_node = False  # Flag to track if we're inside a Write node
-            current_write_node_lines = []  # List to store lines of the current Write node
+        # Check if the user clicked OK Update the Nuke path in the JSON file
+        if user_confirmed and nuke_path.strip():  
+            path_manager = PathManager()
+            path_manager.set_nuke_path(nuke_path)
 
-            # Iterate through each line in the file
-            for line in nuke_file_data:
-                stripped_line = line.strip()
 
-                # Check for the beginning of a Write node and if We are inside a Write node
-                if stripped_line.startswith("Write {"):
-                    in_write_node = True
 
-                if in_write_node:
-                    current_write_node_lines.append(stripped_line) 
 
-                # When we reach the closing brace of a Write node, process it, Extract the name after 'name' Add the name to the list
-                if stripped_line == "}":
-                    for line_in_node in current_write_node_lines:
-                        if line_in_node.startswith("name "):
-                            write_node_name = line_in_node.split()[1]
-                            write_node_names.append(write_node_name)
-                            break
 
-                    # Reset for the next Write node
-                    in_write_node = False
-                    current_write_node_lines = []
 
-        # Return the list of Write node names
-        return write_node_names
-    
+
+
+    # Define a function to prompt the user for the RV Player executable path and update it
+    def rv_player_path_action(self):
+        """
+        Prompt the user to enter the RV player executable path
+        and update it in the path configuration.
+        """
+        rv_player_path, user_confirmed = QInputDialog.getText(self, "Set RV Player Path", "Enter the RV player executable path:")
+
+         # Check if the user clicked OK Update the RV Player path in the JSON file
+        if user_confirmed: 
+            path_manager = PathManager()
+            path_manager.set_rv_player_path(rv_player_path)
+
+
+
+
+
 
     ######################################################################################
     def add_files_to_table(self):
@@ -394,16 +355,15 @@ class RenderMate(QMainWindow):
             self.table_widget.setItem(row, 1, file_name_item)
             self.table_widget.setCellWidget(row, 5, self.create_operation_row_widget())
             self.table_widget.setCellWidget(row, 6, self.create_launcher_row_widget())
-            progress_bar = QProgressBar()
-            progress_bar.setValue(50)  # Set an initial value, you can modify it as needed
-            self.table_widget.setCellWidget(row, 3, progress_bar)
+            self.table_widget.setCellWidget(row, 3, self.progress_bar_creator())
 
 
         # Set write nodes name in the respective columns
         for row, nuke_file in enumerate(self.selected_files):
             # Create a widget to display write nodes or a message and Fetch the list of write nodes from the Nuke file
             write_nodes_widget = QComboBox()
-            write_node_names = self.get_list_of_write_nodes_name(nuke_file)
+            nuke_file_reader = GetNukeFileProperties(nuke_file)
+            write_node_names = nuke_file_reader.get_write_nodes_name()
 
             # Populate the combo box with the write nodes OR Set a QLabel with "No write nodes found" message
             if write_node_names:
@@ -416,12 +376,20 @@ class RenderMate(QMainWindow):
                 self.table_widget.setCellWidget(row, 2, no_nodes_label)
 
 
+
+
+
+
     ######################################################################################
     def clear_table(self):
         """
         Removes all rows from the table widget.
         """
         self.table_widget.setRowCount(0)
+
+
+
+
 
 
     ######################################################################################
@@ -435,6 +403,11 @@ class RenderMate(QMainWindow):
         # Remove rows in descending order to maintain row integrity
         for row in sorted(selected_rows, reverse=True):
             self.table_widget.removeRow(row.row())
+
+
+
+
+
 
     ######################################################################################
     def open_nuke_file(self):
@@ -457,10 +430,17 @@ class RenderMate(QMainWindow):
         nuke_file_path  = Path(Path(file_path.text()) / file_name.text()).as_posix()
 
         # Define the path to the Nuke executable and the required arguments
-        nuke_executable_path  = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
+        path_manager = PathManager()
+        nuke_executable_path  = path_manager.get_nuke_path()
         nukeX_arguments  = "--nukex"
 
         subprocess.Popen([f"{nuke_executable_path}", nukeX_arguments , nuke_file_path  ] , creationflags= subprocess.CREATE_NEW_CONSOLE)
+
+
+
+
+
+
 
     ######################################################################################
     def render_selected(self):
@@ -482,7 +462,12 @@ class RenderMate(QMainWindow):
 
        # Construct the full path to the Nuke script and Path to the Nuke executable
         nuke_file_path  = Path(Path(file_path.text()) / file_name.text()).as_posix()
-        nuke_executable_path  = r"C:\Program Files\Nuke13.2v5\Nuke13.2.exe"
+
+        # Initialize PathManager, retrieve Nuke file properties, and get Nuke executable path
+        path_manager = PathManager()
+        nuke_file_properties = GetNukeFileProperties(nuke_file_path)
+        nuke_executable_path  = path_manager.get_nuke_path()
+        
 
         # Retrieve the write node combo box from the selected row (column index 2)
         write_nodes = self.table_widget.cellWidget(selected_row , 2)
@@ -490,16 +475,60 @@ class RenderMate(QMainWindow):
         # Check if the combo box exists and is valid, Get the selected write node, Prepare the rendering command
         if write_nodes and isinstance(write_nodes , QComboBox):
             selected_write_node = write_nodes.currentText()
-            command = [nuke_executable_path, '-x' , '-X' , selected_write_node, nuke_file_path ]
-            subprocess.Popen(command)
-        
+            frame_range = nuke_file_properties.get_frame_range(selected_write_node)
+
+            # Check if the frame range contains "None" (indicating it's not set), then show a warning message
+            if "None" in frame_range:
+                QMessageBox.warning(None, "Limit Range Not Set", "The limit range is not specified in the write node.")
+
+            # Construct the Nuke render command with the selected write node and frame range, then execute it
+            else:
+                start_frame = int(frame_range.split('-')[0])
+                end_frame = int(frame_range.split('-')[1])
+                progress_bar = self.table_widget.cellWidget(selected_row  , 3)
+                progress_bar.setRange(start_frame , end_frame)
+                command = [nuke_executable_path, '-X', selected_write_node, '-F', f"{frame_range}", '-x' , nuke_file_path ]
+                with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+                    try:
+                        for line in process.stdout:
+                            if line.startswith('Frame '):
+                                progress_bar.setValue(int(line.split()[1]))
+                    except Exception as e:
+                        # Print the error message and the traceback
+                        print(f"An error occurred: {e}")
+                        
         # Display a warning if no write nodes are found in the script
         else:
-            msg_box = QMessageBox()
-            msg_box.setIcon(QMessageBox.Warning)
-            msg_box.setWindowTitle("No Write Nodes Found")
-            msg_box.setText("The selected script doesn't have any write nodes.")
-            msg_box.exec_()
+            QMessageBox.warning(None, "No Write Nodes Found", "The selected script doesn't have any write nodes.")
+
+
+    def open_render_dir_button(self):
+        # Identify the table row where the button was clicked
+        selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+        # Retrieve file path and name from the selected row in the table
+        file_path = self.table_widget.item(selected_row  , 0)
+        file_name = self.table_widget.item(selected_row , 1)
+
+       # Construct the full path to the Nuke script and Path to the Nuke executable
+        nuke_file_path  = Path(Path(file_path.text()) / file_name.text()).as_posix()
+        nuke_file_reader = GetNukeFileProperties(nuke_file_path)
+        
+        write_nodes = self.table_widget.cellWidget(selected_row , 2)
+        
+        # Check if the combo box exists and is valid, Get the selected write node, Prepare the rendering command
+        if write_nodes and isinstance(write_nodes , QComboBox):
+            selected_write_node = write_nodes.currentText()
+            dir_path = nuke_file_reader.get_file_path(selected_write_node)
+            if dir_path:
+                if os.path.exists(os.path.dirname(dir_path)):
+                    os.startfile(os.path.dirname(dir_path))
+                else:
+                    QMessageBox.warning(None, "Invalid path", "Path is Invalid!")
+            else:
+                QMessageBox.warning(None, "No paths Found", "The selected write Node doesn't have any directory path.")
+
+
+
 
 if __name__ == "__main__":
     app = QApplication()

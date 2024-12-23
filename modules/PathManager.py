@@ -2,6 +2,8 @@
 import os
 import json
 
+from PySide2.QtWidgets import QMessageBox
+
 class PathManager:
     """
     A class to manage and update paths for Nuke and RV Player in a JSON file.
@@ -32,6 +34,7 @@ class PathManager:
             with open(self.json_file_path, "w") as file:
                 json.dump(default_paths, file, indent=4)
 
+
     # Define a private method at the class level to update a specified path in the JSON file
     def _update_paths(self, path_key, new_path_value):
         """
@@ -49,6 +52,7 @@ class PathManager:
                 file.seek(0)
                 json.dump(current_data, file, indent=4)
 
+
     # Define a function to set the Nuke path in the JSON file
     def set_nuke_path(self, nuke_path):
         """
@@ -58,6 +62,7 @@ class PathManager:
             nuke_path (str): The path to the Nuke executable.
         """
         self._update_paths("Nuke Path", nuke_path)
+
 
     # Define a function to set the rv player path in the JSON file
     def set_rv_player_path(self, rv_player_path):
@@ -70,5 +75,37 @@ class PathManager:
         self._update_paths("RV Player Path", rv_player_path)
 
 
-a = PathManager()
-a.set_rv_player_path("sdfsdsdsdgsdgsdggsg")
+
+    def get_nuke_path(self):
+        """
+        Retrieves the Nuke executable path from the JSON configuration file.
+        
+        If the Nuke path is empty, it shows a warning message box indicating that no path is set.
+        
+        Returns:
+            str: The Nuke executable path if found, or None if no path is set.
+        """
+
+        # Open the JSON file containing the configuration and load its contents
+        with open(self.json_file_path, "r") as file:
+            current_data = json.load(file)
+
+            # Retrieve the Nuke Path from the configuration
+            nuke_path = current_data.get("Nuke Path")
+
+            # Create and configure the warning message box
+            if nuke_path == '':
+                msg_box = QMessageBox()
+                msg_box.setIcon(QMessageBox.Warning)
+                msg_box.setWindowTitle("No Nuke Path Found")
+                msg_box.setText("The Nuke executable path is not set in the configuration.")
+                msg_box.exec_()
+            
+            # If the Nuke path exists (is not empty), return it
+            else:
+                return nuke_path
+
+            
+if __name__ == "__main__":
+    a = PathManager()
+    a.get_nuke_path()

@@ -1,3 +1,5 @@
+from pprint import pprint
+
 class GetNukeFileProperties():
     """
     A class to parse and extract properties from a Nuke script file (.nk).
@@ -37,23 +39,26 @@ class GetNukeFileProperties():
                 # Extract the render directory
                 if stripped_line.startswith("file "):
                     write_node_properties["render_dir"] = stripped_line.split()[1]
-
-                # Extract the first frame
+                
+                #Extract the first frame and create the frame range
                 if stripped_line.startswith("first "):
-                    first_frame = int(stripped_line.split()[1])
-
-                # Extract the last frame and create the frame range
+                    write_node_properties["first frame"] = stripped_line.split()[1]
+                
+                #Extract the last frame and create the frame range
                 if stripped_line.startswith("last "):
-                    last_frame = int(stripped_line.split()[1])
-                    write_node_properties["frame_range"] = [first_frame, last_frame]
-                    
+                    write_node_properties["last frame"] = stripped_line.split()[1]
+                
                 # Extract the write node name
                 if stripped_line.startswith("name "):
                     write_node_properties["write_node_names"] = stripped_line.split()[1]
-                    self.write_nodes_data .append(write_node_properties) 
-                    
+                
+                # Extract if the write node is disable
+                if stripped_line.startswith("disable "):
+                    write_node_properties["disable"] = stripped_line.split()[1]
+
                  # End of the Write node block
-                if stripped_line == "} ":
+                if stripped_line.startswith("}"):
+                    self.write_nodes_data .append(write_node_properties) 
                     in_write_node = False
 
 
@@ -69,10 +74,11 @@ class GetNukeFileProperties():
         write_nodes_list = []
 
         for write_nodes in self.write_nodes_data :
-            write_nodes_list.append(write_nodes.get("write_node_names"))
+            if not write_nodes.get("disable"):
+                write_nodes_list.append(write_nodes.get("write_node_names"))
             
         return write_nodes_list
-    
+
 
     # Function to retrieve the frame range for a specific Write node
     def get_frame_range(self, write_node_name=None):
@@ -85,12 +91,14 @@ class GetNukeFileProperties():
         Returns:
             list: A list containing the first and last frame numbers, or None if not found.
         """
-
-        for frame_range in self.write_nodes_data :
-            if frame_range.get("write_node_names") == write_node_name:
-                return frame_range.get("frame_range")
-
-
+        
+        # Loop through each item in the 'write_nodes_data' list and  Check if the current write node matches the given 'write_node_name'
+        for write_node in self.write_nodes_data :
+            if write_node.get("write_node_names") == write_node_name:
+                frame_range = f"{write_node.get('first frame' , 1)}-{write_node.get('last frame')}"  # Get the 'first and last frame' value from the dictionary; if first frame doesn't exist, default to 1
+                return frame_range
+                
+                
     # Function to retrieve the render directory path for a specific Write node
     def get_file_path(self, write_node_name=None):
         """
@@ -107,6 +115,6 @@ class GetNukeFileProperties():
                 return file_path.get("render_dir")
 
 
-
-file_properties =  GetNukeFileProperties(r"D:\GamutX\Render_Mate\Nuke_files\PRJ_102_013_v001.nk")
-print(file_properties.write_nodes_data)
+if __name__ == "__main__":
+    file_properties =  GetNukeFileProperties(r"D:\GamutX\Render_Mate\Nuke_files\PRJ_102_013_v001 - Copy (13).nk")
+    pprint(file_properties.get_file_path("mov"))
