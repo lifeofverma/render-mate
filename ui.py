@@ -77,6 +77,7 @@ class RenderMate(QMainWindow):
         self.add_button.clicked.connect(self.add_files_to_table)
         self.remove_all.clicked.connect(self.clear_table)
         self.remove_selected.clicked.connect(self.remove_selected_rows)
+        self.start_all.clicked.connect(self.render_all)
 
         # set buttons icons
         self.add_button.setIcon(QIcon(ADD_ICON))
@@ -189,6 +190,14 @@ class RenderMate(QMainWindow):
 
 
 
+        self.status_label_list = ["In Progress" , "completed" , "Stopped" , "Error"]
+
+    def render_status_label_widget(self):
+        self.status_label = QLabel("On Que")
+        self.status_label.setAlignment(Qt.AlignCenter)
+        return self.status_label
+
+
     def progress_bar_creator(self):
         self.progress_bar = QProgressBar()
         return self.progress_bar
@@ -214,7 +223,8 @@ class RenderMate(QMainWindow):
             self.stop_button.setIcon(QIcon(OPERATION_STOP_ICON))
             self.stop_button.setIconSize(QSize(40, 40)) 
             self.stop_button.setMinimumHeight(40)
-
+            self.stop_button.clicked.connect(self.stop_render_button) 
+            
             # Create horizontal layout for buttons
             self.button_layout = QHBoxLayout()
             self.button_layout.addWidget(self.start_button)
@@ -356,6 +366,7 @@ class RenderMate(QMainWindow):
             self.table_widget.setCellWidget(row, 5, self.create_operation_row_widget())
             self.table_widget.setCellWidget(row, 6, self.create_launcher_row_widget())
             self.table_widget.setCellWidget(row, 3, self.progress_bar_creator())
+            self.table_widget.setCellWidget(row, 4, self.render_status_label_widget())
 
 
         # Set write nodes name in the respective columns
@@ -443,7 +454,7 @@ class RenderMate(QMainWindow):
 
 
     ######################################################################################
-    def render_selected(self):
+    def render_selected(self, selected_row=None):
         """
         Trigger the rendering of the selected Nuke file with a chosen write node.
 
@@ -453,12 +464,16 @@ class RenderMate(QMainWindow):
         a warning popup.
 
         """
+
+        if selected_row is None:
         # Identify the table row where the button was clicked
-        selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+            selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
 
         # Retrieve file path and name from the selected row in the table
         file_path = self.table_widget.item(selected_row  , 0)
         file_name = self.table_widget.item(selected_row , 1)
+        render_status = self.table_widget.cellWidget(selected_row  , 4)
+        render_status.setText(self.status_label_list[0])  
 
        # Construct the full path to the Nuke script and Path to the Nuke executable
         nuke_file_path  = Path(Path(file_path.text()) / file_name.text()).as_posix()
@@ -487,19 +502,36 @@ class RenderMate(QMainWindow):
                 end_frame = int(frame_range.split('-')[1])
                 progress_bar = self.table_widget.cellWidget(selected_row  , 3)
                 progress_bar.setRange(start_frame , end_frame)
-                command = [nuke_executable_path, '-X', selected_write_node, '-F', f"{frame_range}", '-x' , nuke_file_path ]
-                with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
-                    try:
-                        for line in process.stdout:
-                            if line.startswith('Frame '):
-                                progress_bar.setValue(int(line.split()[1]))
-                    except Exception as e:
-                        # Print the error message and the traceback
-                        print(f"An error occurred: {e}")
-                        
+                command = [nuke_executable_path, '-t' , '-X', selected_write_node, '-F', f"{frame_range}", nuke_file_path ]
+
+                with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:                                        
+                    for line in process.stdout:
+                        if line.startswith('Frame '):
+                            progress_bar.setValue(int(line.split()[1]))
+
+                    for error in process.stderr:
+                        if error:
+                            render_status.setText(self.status_label_list[3])
+
+                    process.wait()
+     
+                    if process.returncode == 0:
+                        render_status.setText(self.status_label_list[1]) 
+
         # Display a warning if no write nodes are found in the script
         else:
             QMessageBox.warning(None, "No Write Nodes Found", "The selected script doesn't have any write nodes.")
+
+
+
+
+
+
+
+
+
+
+
 
 
     def open_render_dir_button(self):
@@ -526,6 +558,37 @@ class RenderMate(QMainWindow):
                     QMessageBox.warning(None, "Invalid path", "Path is Invalid!")
             else:
                 QMessageBox.warning(None, "No paths Found", "The selected write Node doesn't have any directory path.")
+
+
+
+
+
+    def render_all(self):
+        """
+        Trigger the rendering of all Nuke files in the table, one by one.
+
+        This method loops through each row in the table and calls the render_selected method
+        to render the Nuke scripts with the selected write nodes.
+        """
+        total_rows = self.table_widget.rowCount()  # Get the total number of rows in the table
+        for row in range(total_rows):
+            # Call render_selected to render the script for the current row
+            self.render_selected(selected_row=row)
+
+
+
+
+
+
+
+
+
+    def stop_render_button(self):
+            # Identify the table row where the button was clicked
+            selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+            render_status = self.table_widget.cellWidget(selected_row  , 4)
+            if render_status.text() == self.status_label_list[0]:
+                print("rg")
 
 
 
