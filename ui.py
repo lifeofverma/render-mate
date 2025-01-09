@@ -35,25 +35,26 @@ class RenderMate(QMainWindow):
 
 
         self.central_widget = QWidget()
+        # self.central_widget.setStyleSheet("background-color: #323232;")
         self.setCentralWidget(self.central_widget)
 
 
         # header widget starts from here
-        self.header = QWidget()
+        # self.header = QWidget()
 
-        self.nuke_icon_label = QLabel()
-        self.user_icon_label = QLabel()
-        self.user_name = QLabel(getuser())
-        self.tool_name = QLabel("RenderMate")
-        self.nuke_icon_label.setPixmap(QPixmap(NUKE_ICON).scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation ))
-        self.user_icon_label.setPixmap(QPixmap(USER_ICON).scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation))
+        # self.nuke_icon_label = QLabel()
+        # self.user_icon_label = QLabel()
+        # self.user_name = QLabel(getuser())
+        # self.tool_name = QLabel("RenderMate")
+        # self.nuke_icon_label.setPixmap(QPixmap(NUKE_ICON).scaled(64, 64 , Qt.KeepAspectRatio,  Qt.SmoothTransformation ))
+        # self.user_icon_label.setPixmap(QPixmap(USER_ICON).scaled(64,64 , Qt.KeepAspectRatio , Qt.SmoothTransformation))
 
-        self.header_layout = QHBoxLayout()
-        self.header_layout.addWidget(self.nuke_icon_label)
-        self.header_layout.addWidget(self.user_icon_label)
-        self.header_layout.addWidget(self.tool_name)
-        self.header_layout.addWidget(self.user_name)
-        self.header.setLayout(self.header_layout)
+        # self.header_layout = QHBoxLayout()
+        # self.header_layout.addWidget(self.nuke_icon_label)
+        # self.header_layout.addWidget(self.user_icon_label)
+        # self.header_layout.addWidget(self.tool_name)
+        # self.header_layout.addWidget(self.user_name)
+        # self.header.setLayout(self.header_layout)
 
 
         #############################################################################################################################################
@@ -61,7 +62,7 @@ class RenderMate(QMainWindow):
         # Sidebar widget setup
         self.side_bar_widget = QWidget()
         self.side_bar_widget.setFixedWidth(105)
-        # self.side_bar.setStyleSheet("background-color: #323232;")
+        self.side_bar_widget.setStyleSheet("background-color: #323232;")
         
         # Create buttons
         self.add_button = QPushButton()
@@ -92,7 +93,7 @@ class RenderMate(QMainWindow):
 
         self.add_button.setIconSize(QSize(40, 40)) 
         self.remove_selected.setIconSize(QSize(40, 40)) 
-        self.remove_all.setIconSize(QSize(60, 40)) 
+        self.remove_all.setIconSize(QSize(40, 40)) 
         self.start_all.setIconSize(QSize(40, 40)) 
         # self.stop_all.setStyleSheet("QPushButton { border: none; }") 
         # self.stop_all.setIconSize(QSize(40, 40)) 
@@ -101,16 +102,16 @@ class RenderMate(QMainWindow):
 
         # Create labels for buttons
         self.add_label = QLabel("Add")
-        self.add_label.setFixedHeight(40)
+        # self.add_label.setFixedHeight(40)
         self.remove_all_label = QLabel("Remove all")
         self.remove_selected_label = QLabel("Remove Selected")
         self.start_all_label = QLabel("Start all")
         # self.stop_all_label = QLabel("Stop all")
         
-        self.add_label.setFixedHeight(20)
-        self.remove_selected_label.setFixedHeight(30)
-        self.remove_all_label.setFixedHeight(10)
-        self.start_all_label.setFixedHeight(20)
+        # self.add_label.setFixedHeight(20)
+        # self.remove_selected_label.setFixedHeight(30)
+        # self.remove_all_label.setFixedHeight(10)
+        # self.start_all_label.setFixedHeight(20)
         # self.stop_all_label.setFixedHeight(20)
 
         
@@ -125,22 +126,19 @@ class RenderMate(QMainWindow):
 
         # Create individual layouts for each button and label pair
         self.add_layout = QVBoxLayout()
-        self.add_layout.setSpacing(0)
         self.add_layout.addWidget(self.add_button)
         self.add_layout.addWidget(self.add_label)
+        
 
         self.remove_all_layout = QVBoxLayout()
-        self.remove_all_layout.setSpacing(0)
         self.remove_all_layout.addWidget(self.remove_all)
         self.remove_all_layout.addWidget(self.remove_all_label)
 
         self.remove_selected_layout = QVBoxLayout()
-        self.remove_selected_layout.setSpacing(0)
         self.remove_selected_layout.addWidget(self.remove_selected)
         self.remove_selected_layout.addWidget(self.remove_selected_label)
 
         self.start_all_layout = QVBoxLayout()
-        self.start_all_layout.setSpacing(0)
         self.start_all_layout.addWidget(self.start_all)
         self.start_all_layout.addWidget(self.start_all_label)
         
@@ -159,7 +157,7 @@ class RenderMate(QMainWindow):
         # self.side_bar_main_layout.addLayout(self.stop_all_layout)
         
         # Create a spacer item with a fixed height
-        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        spacer = QSpacerItem(0, 80, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         # Add the spacer before the sidebar widget in the layout
         self.side_bar_main_layout.addItem(spacer)
@@ -170,12 +168,36 @@ class RenderMate(QMainWindow):
         #############################################################################################################################################
         # Property widget (table) setup
         self.table_widget = QTableWidget()
+        self.table_widget.setShowGrid(False)
         self.table_widget.setColumnCount(6)
         self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Launchers"]) 
         
         # Set header behavior for property widget
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table_widget.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+
+
+
+
+
+        # Set header background color to blue and adjust other properties
+        self.table_widget.setStyleSheet("""
+                                        
+            QTableWidget {
+                background-color: #1d1d1d;
+                border: none;
+                color: #d7d3d3;
+                font-size: 12px;
+            }
+            QHeaderView::section {
+                background-color: #323232; 
+                border: none;
+                color: white;
+                font-size: 16px;      
+            }
+        """)
+
+
         
         
         # Table and sidebar layout setup
@@ -185,7 +207,7 @@ class RenderMate(QMainWindow):
 
         # Main layout setup
         main_layout = QVBoxLayout()
-        main_layout.addWidget(self.header)
+        # main_layout.addWidget(self.header)
         main_layout.addLayout(self.hbox_layout)
         self.central_widget.setLayout(main_layout) 
 
@@ -196,6 +218,13 @@ class RenderMate(QMainWindow):
 
     def render_status_label_widget(self):
         self.status_label = QLabel("On Que")
+        self.status_label.setStyleSheet("""                                  
+            QLabel {
+                color: #d7d3d3;
+                font-size: 12px;
+            }
+        """)
+
         self.status_label.setAlignment(Qt.AlignCenter)
         return self.status_label
 
@@ -258,15 +287,15 @@ class RenderMate(QMainWindow):
             self.nuke_button = QPushButton("")
             self.nuke_button.setIcon(QIcon(NUKE_ICON))
             self.nuke_button.setFlat(True)
-            self.nuke_button.setIconSize(QSize(40, 40)) 
+            # self.nuke_button.setIconSize(QSize(25, 25)) 
             self.nuke_button.clicked.connect(self.open_nuke_file)
-            self.nuke_button.setMinimumHeight(40)
+            # self.nuke_button.setMinimumHeight(40)
 
             self.open_render_dir = QPushButton("")
             self.open_render_dir.setFlat(True)
             self.open_render_dir.setIcon(QIcon(OPEN_DIR_ICON))
-            self.open_render_dir.setIconSize(QSize(40, 40)) 
-            self.open_render_dir.setMinimumHeight(40)
+            # self.open_render_dir.setIconSize(QSize(25, 25)) 
+            # self.open_render_dir.setMinimumHeight(40)
             self.open_render_dir.clicked.connect(self.open_render_dir_button)
 
             # Create horizontal layout for buttons
@@ -390,9 +419,10 @@ class RenderMate(QMainWindow):
                 self.table_widget.setCellWidget(row, 2, write_nodes_widget)
             
             else:
-                no_nodes_label = QLabel("No write nodes found")
-                no_nodes_label.setAlignment(Qt.AlignCenter)
-                self.table_widget.setCellWidget(row, 2, no_nodes_label)
+                self.table_widget.setCellWidget(row, 2, write_nodes_widget)
+                # no_nodes_label = QLabel("No write nodes found")
+                # no_nodes_label.setAlignment(Qt.AlignCenter)
+                # self.table_widget.setCellWidget(row, 2, no_nodes_label)
 
 
 

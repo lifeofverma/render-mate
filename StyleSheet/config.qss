@@ -1,0 +1,7 @@
+table.setStyleSheet("""
+    QHeaderView::section {
+        background-color: blue;
+        color: white;  # Set text color to white for better contrast
+        padding: 4px;
+    }
+""")
