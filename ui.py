@@ -9,7 +9,7 @@ import json
 # Importing third party modules
 from PySide2.QtWidgets import QApplication, QInputDialog, QMessageBox, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
-from PySide2.QtCore import Qt , QSize
+from PySide2.QtCore import Qt , QSize, QTimer
 
 # Importing custom modules
 from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON, STOP_ICON, OPERATION_PLAY_ICON, OPERATION_STOP_ICON, OPEN_DIR_ICON, RV_ICON
@@ -28,10 +28,10 @@ class RenderMate(QMainWindow):
         self.setMenuBar(self.menu_bar)
         self.set_path = self.menu_bar.addMenu("Set Path")
         self.set_nuke_path_action = self.set_path.addAction("Set Nuke Path")
-        self.set_rv_player_path_action = self.set_path.addAction("Set RV Player Path")
+        # self.set_rv_player_path_action = self.set_path.addAction("Set RV Player Path")
 
         self.set_nuke_path_action.triggered.connect(self.nuke_path_action)
-        self.set_rv_player_path_action.triggered.connect(self.rv_player_path_action)
+        # self.set_rv_player_path_action.triggered.connect(self.rv_player_path_action)
 
 
         self.central_widget = QWidget()
@@ -40,8 +40,7 @@ class RenderMate(QMainWindow):
 
         # header widget starts from here
         self.header = QWidget()
-        # self.header.setStyleSheet("background-color: #1d1d1d;")
-        # self.header.setFixedSize(1000,100)
+
         self.nuke_icon_label = QLabel()
         self.user_icon_label = QLabel()
         self.user_name = QLabel(getuser())
@@ -68,9 +67,12 @@ class RenderMate(QMainWindow):
         self.add_button = QPushButton()
         self.add_button.setFlat(True)
         self.remove_selected = QPushButton()
+        self.remove_selected.setFlat(True)
         self.remove_all = QPushButton()
+        self.remove_all.setFlat(True)
         self.start_all = QPushButton()
-        self.stop_all = QPushButton()
+        self.start_all.setFlat(True)
+        # self.stop_all = QPushButton()
 
 
 
@@ -82,7 +84,7 @@ class RenderMate(QMainWindow):
         # set buttons icons
         self.add_button.setIcon(QIcon(ADD_ICON))
         self.start_all.setIcon(QIcon(PLAY_ICON))
-        self.stop_all.setIcon(QIcon(STOP_ICON))
+        # self.stop_all.setIcon(QIcon(STOP_ICON))
         self.remove_all.setIcon(QIcon(REMOVE_ICON))
         self.remove_selected.setIcon(QIcon(REMOVE_SELECTED_ICON))
 
@@ -93,7 +95,7 @@ class RenderMate(QMainWindow):
         self.remove_all.setIconSize(QSize(60, 40)) 
         self.start_all.setIconSize(QSize(40, 40)) 
         # self.stop_all.setStyleSheet("QPushButton { border: none; }") 
-        self.stop_all.setIconSize(QSize(40, 40)) 
+        # self.stop_all.setIconSize(QSize(40, 40)) 
         
 
 
@@ -103,20 +105,20 @@ class RenderMate(QMainWindow):
         self.remove_all_label = QLabel("Remove all")
         self.remove_selected_label = QLabel("Remove Selected")
         self.start_all_label = QLabel("Start all")
-        self.stop_all_label = QLabel("Stop all")
+        # self.stop_all_label = QLabel("Stop all")
         
         self.add_label.setFixedHeight(20)
         self.remove_selected_label.setFixedHeight(30)
         self.remove_all_label.setFixedHeight(10)
         self.start_all_label.setFixedHeight(20)
-        self.stop_all_label.setFixedHeight(20)
+        # self.stop_all_label.setFixedHeight(20)
 
         
         self.add_label.setAlignment(Qt.AlignCenter)
         self.remove_selected_label.setAlignment(Qt.AlignCenter)
         self.remove_all_label.setAlignment(Qt.AlignCenter)
         self.start_all_label.setAlignment(Qt.AlignCenter)
-        self.stop_all_label.setAlignment(Qt.AlignCenter)
+        # self.stop_all_label.setAlignment(Qt.AlignCenter)
 
 
 
@@ -143,10 +145,10 @@ class RenderMate(QMainWindow):
         self.start_all_layout.addWidget(self.start_all_label)
         
 
-        self.stop_all_layout = QVBoxLayout()
-        self.stop_all_layout.setSpacing(0)
-        self.stop_all_layout.addWidget(self.stop_all)
-        self.stop_all_layout.addWidget(self.stop_all_label)
+        # self.stop_all_layout = QVBoxLayout()
+        # self.stop_all_layout.setSpacing(0)
+        # self.stop_all_layout.addWidget(self.stop_all)
+        # self.stop_all_layout.addWidget(self.stop_all_label)
 
         # Create the main layout and add each button layout
         self.side_bar_main_layout = QVBoxLayout()
@@ -154,7 +156,7 @@ class RenderMate(QMainWindow):
         self.side_bar_main_layout.addLayout(self.remove_all_layout)
         self.side_bar_main_layout.addLayout(self.remove_selected_layout)
         self.side_bar_main_layout.addLayout(self.start_all_layout)
-        self.side_bar_main_layout.addLayout(self.stop_all_layout)
+        # self.side_bar_main_layout.addLayout(self.stop_all_layout)
         
         # Create a spacer item with a fixed height
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -168,8 +170,8 @@ class RenderMate(QMainWindow):
         #############################################################################################################################################
         # Property widget (table) setup
         self.table_widget = QTableWidget()
-        self.table_widget.setColumnCount(7)
-        self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Operations" , "Launchers"]) 
+        self.table_widget.setColumnCount(6)
+        self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Launchers"]) 
         
         # Set header behavior for property widget
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -214,21 +216,22 @@ class RenderMate(QMainWindow):
             self.operation_row_widget = QWidget()
 
             self.start_button = QPushButton("")
+            self.start_button.setFlat(True)
             self.start_button.setIcon(QIcon(OPERATION_PLAY_ICON))
             self.start_button.setIconSize(QSize(40, 40)) 
             self.start_button.setMinimumHeight(40)
             self.start_button.clicked.connect(self.render_selected)  
 
-            self.stop_button = QPushButton("")
-            self.stop_button.setIcon(QIcon(OPERATION_STOP_ICON))
-            self.stop_button.setIconSize(QSize(40, 40)) 
-            self.stop_button.setMinimumHeight(40)
-            self.stop_button.clicked.connect(self.stop_render_button) 
+            # self.stop_button = QPushButton("")
+            # self.stop_button.setIcon(QIcon(OPERATION_STOP_ICON))
+            # self.stop_button.setIconSize(QSize(40, 40)) 
+            # self.stop_button.setMinimumHeight(40)
+            # self.stop_button.clicked.connect(self.stop_render_button) 
             
             # Create horizontal layout for buttons
             self.button_layout = QHBoxLayout()
             self.button_layout.addWidget(self.start_button)
-            self.button_layout.addWidget(self.stop_button)
+            # self.button_layout.addWidget(self.stop_button)
 
             # Set layout to the widget
             self.operation_row_widget.setLayout(self.button_layout)
@@ -246,11 +249,11 @@ class RenderMate(QMainWindow):
             self.launcher_row_widget = QWidget()
 
             # Initialize buttons
-            self.rv_button = QPushButton("")
-            self.rv_button.setIcon(QIcon(RV_ICON))
-            self.rv_button.setIconSize(QSize(40, 40)) 
-            self.rv_button.setFlat(True)
-            self.rv_button.setMinimumHeight(40)
+            # self.rv_button = QPushButton("")
+            # self.rv_button.setIcon(QIcon(RV_ICON))
+            # self.rv_button.setIconSize(QSize(40, 40)) 
+            # self.rv_button.setFlat(True)
+            # self.rv_button.setMinimumHeight(40)
 
             self.nuke_button = QPushButton("")
             self.nuke_button.setIcon(QIcon(NUKE_ICON))
@@ -268,7 +271,7 @@ class RenderMate(QMainWindow):
 
             # Create horizontal layout for buttons
             self.button_layout = QHBoxLayout()
-            self.button_layout.addWidget(self.rv_button)
+            # self.button_layout.addWidget(self.rv_button)
             self.button_layout.addWidget(self.nuke_button)
             self.button_layout.addWidget(self.open_render_dir)
 
@@ -306,18 +309,18 @@ class RenderMate(QMainWindow):
 
 
 
-    # Define a function to prompt the user for the RV Player executable path and update it
-    def rv_player_path_action(self):
-        """
-        Prompt the user to enter the RV player executable path
-        and update it in the path configuration.
-        """
-        rv_player_path, user_confirmed = QInputDialog.getText(self, "Set RV Player Path", "Enter the RV player executable path:")
+    # # Define a function to prompt the user for the RV Player executable path and update it
+    # def rv_player_path_action(self):
+    #     """
+    #     Prompt the user to enter the RV player executable path
+    #     and update it in the path configuration.
+    #     """
+    #     rv_player_path, user_confirmed = QInputDialog.getText(self, "Set RV Player Path", "Enter the RV player executable path:")
 
-         # Check if the user clicked OK Update the RV Player path in the JSON file
-        if user_confirmed: 
-            path_manager = PathManager()
-            path_manager.set_rv_player_path(rv_player_path)
+    #      # Check if the user clicked OK Update the RV Player path in the JSON file
+    #     if user_confirmed: 
+    #         path_manager = PathManager()
+    #         path_manager.set_rv_player_path(rv_player_path)
 
 
 
@@ -339,6 +342,11 @@ class RenderMate(QMainWindow):
             r"D:\GamutX\Render_Mate\Nuke_files", 
             "Nuke Files (*.nk)"
         )[0])
+
+
+
+        if not self.selected_files:
+            return 
 
         # Separate file paths and names
         file_paths = []
@@ -363,8 +371,8 @@ class RenderMate(QMainWindow):
             # Set items and widgets in the respective columns
             self.table_widget.setItem(row, 0, file_path_item)
             self.table_widget.setItem(row, 1, file_name_item)
-            self.table_widget.setCellWidget(row, 5, self.create_operation_row_widget())
-            self.table_widget.setCellWidget(row, 6, self.create_launcher_row_widget())
+            # self.table_widget.setCellWidget(row, 5, self.create_operation_row_widget())
+            self.table_widget.setCellWidget(row, 5, self.create_launcher_row_widget())
             self.table_widget.setCellWidget(row, 3, self.progress_bar_creator())
             self.table_widget.setCellWidget(row, 4, self.render_status_label_widget())
 
@@ -454,7 +462,7 @@ class RenderMate(QMainWindow):
 
 
     ######################################################################################
-    def render_selected(self, selected_row=None):
+    def render_selected(self , sender=None, selected_row = None):
         """
         Trigger the rendering of the selected Nuke file with a chosen write node.
 
@@ -462,12 +470,14 @@ class RenderMate(QMainWindow):
         retrieves the corresponding file path and name, and renders the script using the 
         selected write node from the combo box. If no write nodes are available, it shows 
         a warning popup.
-
         """
 
+
+
         if selected_row is None:
-        # Identify the table row where the button was clicked
-            selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+            # Identify the table row where the button was clicked
+            sender = self.sender()
+            selected_row = self.table_widget.indexAt(sender.parent().pos()).row()
 
         # Retrieve file path and name from the selected row in the table
         file_path = self.table_widget.item(selected_row  , 0)
@@ -494,7 +504,8 @@ class RenderMate(QMainWindow):
 
             # Check if the frame range contains "None" (indicating it's not set), then show a warning message
             if "None" in frame_range:
-                QMessageBox.warning(None, "Limit Range Not Set", "The limit range is not specified in the write node.")
+                render_status.setText("Set limit range.")
+                # QMessageBox.warning(None, "Limit Range Not Set", "The limit range is not specified in the write node.")
 
             # Construct the Nuke render command with the selected write node and frame range, then execute it
             else:
@@ -502,7 +513,7 @@ class RenderMate(QMainWindow):
                 end_frame = int(frame_range.split('-')[1])
                 progress_bar = self.table_widget.cellWidget(selected_row  , 3)
                 progress_bar.setRange(start_frame , end_frame)
-                command = [nuke_executable_path, '-t' , '-X', selected_write_node, '-F', f"{frame_range}", nuke_file_path ]
+                command = nuke_executable_path, '-t' , '-X', selected_write_node, '-F', f"{frame_range}", nuke_file_path
 
                 with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:                                        
                     for line in process.stdout:
@@ -520,17 +531,8 @@ class RenderMate(QMainWindow):
 
         # Display a warning if no write nodes are found in the script
         else:
-            QMessageBox.warning(None, "No Write Nodes Found", "The selected script doesn't have any write nodes.")
-
-
-
-
-
-
-
-
-
-
+            render_status.setText("No write nodes found.")
+ 
 
 
 
@@ -570,25 +572,12 @@ class RenderMate(QMainWindow):
         This method loops through each row in the table and calls the render_selected method
         to render the Nuke scripts with the selected write nodes.
         """
-        total_rows = self.table_widget.rowCount()  # Get the total number of rows in the table
+
+        total_rows = self.table_widget.rowCount()  
         for row in range(total_rows):
             # Call render_selected to render the script for the current row
             self.render_selected(selected_row=row)
 
-
-
-
-
-
-
-
-
-    def stop_render_button(self):
-            # Identify the table row where the button was clicked
-            selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
-            render_status = self.table_widget.cellWidget(selected_row  , 4)
-            if render_status.text() == self.status_label_list[0]:
-                print("rg")
 
 
 
