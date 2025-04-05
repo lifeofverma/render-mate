@@ -9,12 +9,13 @@ import json
 # Importing third party modules
 from PySide2.QtWidgets import QApplication, QInputDialog, QMessageBox, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
-from PySide2.QtCore import Qt , QSize, QTimer
+from PySide2.QtCore import Qt , QSize, QTimer, QThread
 
 # Importing custom modules
 from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON, STOP_ICON, OPERATION_PLAY_ICON, OPERATION_STOP_ICON, OPEN_DIR_ICON, RV_ICON
 from modules.PathManager import PathManager
 from modules.NukeFileReader import GetNukeFileProperties
+from modules.Worker_thread import WorkerThread
 
 
 class RenderMate(QMainWindow):
@@ -204,11 +205,14 @@ class RenderMate(QMainWindow):
         self.hbox_layout = QHBoxLayout()
         self.hbox_layout.addWidget(self.side_bar_widget)
         self.hbox_layout.addWidget(self.table_widget)
+        # self.hbox_layout.setContentsMargins(0,0,0,0)
 
         # Main layout setup
         main_layout = QVBoxLayout()
         # main_layout.addWidget(self.header)
         main_layout.addLayout(self.hbox_layout)
+        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.setSpacing(0)
         self.central_widget.setLayout(main_layout) 
 
 
@@ -243,6 +247,7 @@ class RenderMate(QMainWindow):
                 operation_row_widget (QWidget): A widget containing operation buttons.
             """
             self.operation_row_widget = QWidget()
+            
 
             self.start_button = QPushButton("")
             self.start_button.setFlat(True)
@@ -260,6 +265,7 @@ class RenderMate(QMainWindow):
             # Create horizontal layout for buttons
             self.button_layout = QHBoxLayout()
             self.button_layout.addWidget(self.start_button)
+            self.button_layout.setContentsMargins(0,0,0,0)
             # self.button_layout.addWidget(self.stop_button)
 
             # Set layout to the widget
@@ -276,6 +282,7 @@ class RenderMate(QMainWindow):
                 create_launcher_row_widget (QWidget): A widget containing operation buttons.
             """
             self.launcher_row_widget = QWidget()
+            # self.launcher_row_widget.setFixedWidth(100)
 
             # Initialize buttons
             # self.rv_button = QPushButton("")
@@ -285,6 +292,7 @@ class RenderMate(QMainWindow):
             # self.rv_button.setMinimumHeight(40)
 
             self.nuke_button = QPushButton("")
+            self.nuke_button.setFixedWidth(25)
             self.nuke_button.setIcon(QIcon(NUKE_ICON))
             self.nuke_button.setFlat(True)
             # self.nuke_button.setIconSize(QSize(25, 25)) 
@@ -292,6 +300,7 @@ class RenderMate(QMainWindow):
             # self.nuke_button.setMinimumHeight(40)
 
             self.open_render_dir = QPushButton("")
+            self.open_render_dir.setFixedWidth(25)
             self.open_render_dir.setFlat(True)
             self.open_render_dir.setIcon(QIcon(OPEN_DIR_ICON))
             # self.open_render_dir.setIconSize(QSize(25, 25)) 
@@ -303,6 +312,7 @@ class RenderMate(QMainWindow):
             # self.button_layout.addWidget(self.rv_button)
             self.button_layout.addWidget(self.nuke_button)
             self.button_layout.addWidget(self.open_render_dir)
+            self.button_layout.setContentsMargins(0,0,0,0)
 
             # Set layout to the widget
             self.launcher_row_widget.setLayout(self.button_layout)
@@ -528,9 +538,10 @@ class RenderMate(QMainWindow):
         write_nodes = self.table_widget.cellWidget(selected_row , 2)
         
         # Check if the combo box exists and is valid, Get the selected write node, Prepare the rendering command
-        if write_nodes and isinstance(write_nodes , QComboBox):
+        if write_nodes.count() != 0:
             selected_write_node = write_nodes.currentText()
             frame_range = nuke_file_properties.get_frame_range(selected_write_node)
+
 
             # Check if the frame range contains "None" (indicating it's not set), then show a warning message
             if "None" in frame_range:
@@ -543,25 +554,34 @@ class RenderMate(QMainWindow):
                 end_frame = int(frame_range.split('-')[1])
                 progress_bar = self.table_widget.cellWidget(selected_row  , 3)
                 progress_bar.setRange(start_frame , end_frame)
+                
                 command = nuke_executable_path, '-t' , '-X', selected_write_node, '-F', f"{frame_range}", nuke_file_path
 
-                with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:                                        
-                    for line in process.stdout:
-                        if line.startswith('Frame '):
-                            progress_bar.setValue(int(line.split()[1]))
+                self.render_handler = WorkerThread()
+                self.render_handler.set_process_param(command)
 
-                    for error in process.stderr:
-                        if error:
-                            render_status.setText(self.status_label_list[3])
+                self.render_thread = QThread()
 
-                    process.wait()
-     
-                    if process.returncode == 0:
-                        render_status.setText(self.status_label_list[1]) 
+                self.render_handler.moveToThread(self.render_thread)
+                self.render_thread.started.connect(self.render_handler.render)
+                self.render_handler.progress.connect(progress_bar.setValue)
+                self.render_handler.error.connect(render_status.setText)
+                self.render_handler.error.connect(self.render_thread.quit)
+
+                self.render_handler.completed.connect(render_status.setText)
+                self.render_handler.completed.connect(self.render_thread.quit)
+
+                self.render_thread.finished.connect(self.render_thread.deleteLater)
+                self.render_thread.finished.connect(self.render_handler.deleteLater)
+
+
+                self.render_thread.start()
 
         # Display a warning if no write nodes are found in the script
         else:
             render_status.setText("No write nodes found.")
+
+
  
 
 
@@ -607,6 +627,7 @@ class RenderMate(QMainWindow):
         for row in range(total_rows):
             # Call render_selected to render the script for the current row
             self.render_selected(selected_row=row)
+
 
 
 
