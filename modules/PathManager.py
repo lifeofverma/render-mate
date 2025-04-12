@@ -13,12 +13,6 @@ class PathManager:
     """
 
     def __init__(self):
-        """
-        Initializes the PathManager class and ensures that the directory and JSON file
-        for storing paths exist. If the JSON file does not exist, it will be created
-        with default empty values for 'Nuke Path' and 'RV Player Path'.
-        """
-
         # Get the user's home directory, define the RenderMate directory, and specify the path to the JSON file
         home_dir = os.path.expanduser("~")
         render_mate_dir = os.path.join(home_dir, "RenderMate")
@@ -33,7 +27,6 @@ class PathManager:
             default_paths = {"Nuke Path": "", "RV Player Path": ""}
             with open(self.json_file_path, "w") as file:
                 json.dump(default_paths, file, indent=4)
-
 
     # Define a private method at the class level to update a specified path in the JSON file
     def _update_paths(self, path_key, new_path_value):
@@ -52,7 +45,6 @@ class PathManager:
                 file.seek(0)
                 json.dump(current_data, file, indent=4)
 
-
     # Define a function to set the Nuke path in the JSON file
     def set_nuke_path(self, nuke_path):
         """
@@ -63,7 +55,6 @@ class PathManager:
         """
         self._update_paths("Nuke Path", nuke_path)
 
-
     # Define a function to set the rv player path in the JSON file
     def set_rv_player_path(self, rv_player_path):
         """
@@ -73,8 +64,6 @@ class PathManager:
             rv_player_path (str): The path to the RV Player executable.
         """
         self._update_paths("RV Player Path", rv_player_path)
-
-
 
     def get_nuke_path(self):
         """
@@ -105,7 +94,6 @@ class PathManager:
             else:
                 return nuke_path
 
-            
 if __name__ == "__main__":
     a = PathManager()
     a.get_nuke_path()

@@ -2,14 +2,14 @@
 RenderMate
 
 ## **Project Description**
-AutoNukeRender is a tool designed to streamline the rendering process for multiple Nuke scripts without the need to open each file manually. It allows users to manage and execute renders for multiple Nuke scripts in a single, efficient workflow. 
+RenderMate is a tool designed to streamline the rendering process for multiple Nuke scripts without the need to open each file manually. It allows users to manage and execute renders for multiple Nuke scripts in a single, efficient workflow. 
 
 This tool is especially helpful for freelancers and small teams, offering a local render-farm-style experience, empowering their rendering processes, and boosting productivity.
 
 ---
 
 ## **Goals**
-The primary goal of AutoNukeRender is to simplify and automate the rendering process for Nuke artists. It is designed to:
+The primary goal of RenderMate is to simplify and automate the rendering process for Nuke artists. It is designed to:
 - Save time by eliminating the need to manually open and render multiple Nuke scripts.
 - Provide a local render farm experience for users.
 - Empower freelancers and small teams globally to manage and execute renders efficiently.
@@ -17,7 +17,7 @@ The primary goal of AutoNukeRender is to simplify and automate the rendering pro
 ---
 
 ## **Features**
-AutoNukeRender provides a user-friendly interface with the following key features:
+RenderMate provides a user-friendly interface with the following key features:
 
 ### **Main Functionalities**
 1. **Add File**
@@ -38,16 +38,16 @@ AutoNukeRender provides a user-friendly interface with the following key feature
 
 ---
 
-### **UI Information**
+## **UI Information**
 The tool provides comprehensive details about each file in the list:
 - **File Path:** Displays the full file path of the `.nk` script.
 - **File Name:** Shows the name of the `.nk` script.
 - **Open Directory:** Opens the folder containing the Nuke file.
 
-### **Write Nodes Selection**
+## **Write Nodes Selection**
 - Allows users to choose specific Write Nodes to render when a script contains multiple nodes.
 
-### **Render Progress and Status**
+## **Render Progress and Status**
 - **Progress:** Displays the progress of the render for each file as a percentage.
 - **Status:** Indicates the current render state:
   - `Complete`: Render finished successfully.
@@ -59,8 +59,8 @@ The tool provides comprehensive details about each file in the list:
 
 ---
 
-### **Operations**
-AutoNukeRender includes several actions for each file:
+## **Operations**
+RenderMate includes several actions for each file:
 - **RV Player Button:** Opens the rendered data directly in RV Player for preview.
 - **Nuke Button:** Opens the rendered file in Nuke for further adjustments.
 - **Play Button:** Starts the render for the selected file.
@@ -71,7 +71,7 @@ AutoNukeRender includes several actions for each file:
 ---
 
 ## **How to Use**
-1. Launch AutoNukeRender.
+1. Launch RenderMate.
 2. Use the **Add File** button to select `.nk` files for rendering.
 3. Manage your file list using:
    - **Remove File**: Remove a specific file from the list.
@@ -84,7 +84,7 @@ AutoNukeRender includes several actions for each file:
 ---
 
 ## **Getting Started**
-To start using AutoNukeRender, ensure you have the following:
+To start using RenderMate, ensure you have the following:
 - **The Foundry Nuke:** Installed on your system.
 - **RV Player:** Installed on your system to oens the rendered data directly in RV Player for preview .
 - **Python 3:** The tool is built with Python (PySide2 or PyQt5 for the UI).
