@@ -379,8 +379,6 @@ class RenderMate(QMainWindow):
             "Nuke Files (*.nk)"
         )[0])
 
-
-
         if not self.selected_files:
             return 
 
@@ -505,8 +503,6 @@ class RenderMate(QMainWindow):
         a warning popup.
         """
 
-
-
         if selected_row is None:
             # Identify the table row where the button was clicked
             sender = self.sender()
@@ -577,11 +573,10 @@ class RenderMate(QMainWindow):
             self.render_status.setText("No write nodes found.")
             self._render_next()
 
-
-
     def open_render_dir_button(self):
         # Identify the table row where the button was clicked
         selected_row  = self.table_widget.indexAt(self.sender().parent().pos()).row()
+
         # Retrieve file path and name from the selected row in the table
         file_path = self.table_widget.item(selected_row  , 0)
         file_name = self.table_widget.item(selected_row , 1)
@@ -604,51 +599,80 @@ class RenderMate(QMainWindow):
             else:
                 QMessageBox.warning(None, "No paths Found", "The selected write Node doesn't have any directory path.")
 
-
-
     def render_all(self):
         """
         Trigger the rendering of all Nuke files in the table, one by one.
 
-        This method loops through each row in the table and calls the render_selected method
-        to render the Nuke scripts with the selected write nodes.
+        This method initializes the list of rows (scripts) to render, updates their status
+        to "on Que", disables the 'Start All' button, and begins the rendering process.
         """
 
-        self.nuke_files_to_render = list(range(self.table_widget.rowCount())) 
+        # Create a queue of rows to be rendered
+        self.nuke_files_to_render = list(range(self.table_widget.rowCount()))
+        
+        # Set all rows' status to "on Que"
+        for status_label in self.nuke_files_to_render:
+            status_label = self.table_widget.cellWidget(status_label, 4)
+            if status_label:
+                status_label.setText("on Que") 
+
+        # Disable the Start All button while rendering is in progress
         self.start_all.setEnabled(False) 
+    
+        # Start rendering the first file in the queue
         self._render_next()
 
 
 
     def _render_next(self):
+        """
+        Render the next Nuke file in the queue.
+
+        If the queue is empty, re-enable the Start All button. Otherwise,
+        pop the next file from the queue and call render_selected on it.
+        """
+
+        # If all files are rendered, enable Start All button and exit
         if not self.nuke_files_to_render:
             self.start_all.setEnabled(True)
             return
         
+        # Pop the next row index to render
         nuke_file = self.nuke_files_to_render.pop(0)
 
+       # Call the rendering function for that row
         self.render_selected(selected_row=nuke_file)
 
-
     def stop_all_renders(self):
+        """
+        Stop all ongoing and queued renders.
+
+        This method sets the status of all table rows to "Cancelled", clears the render queue,
+        terminates the current rendering process (if any), and safely stops the background thread.
+        """
+        
+        #Create a status label list of rows to be stopped
         status_label_list = list(range(self.table_widget.rowCount()))
         
+        # Mark all table rows as "Cancelled"
         for status_label in status_label_list:
             status_label = self.table_widget.cellWidget(status_label, 4)
             if status_label:
                 status_label.setText("Cancelled")
 
+        # Clear any remaining files in the render queue
         self.nuke_files_to_render.clear()
         
+        # Terminate the current process if it exists
         if self.render_handler:
             self.render_handler.terminate_process()
             self.render_handler.deleteLater()
 
-        # Now, stop the QThread safely by calling quit() and deleteLater()
-        if hasattr(self, 'render_thread') and self.render_thread.isRunning():
-            self.render_thread.quit()  # This will stop the thread
-            self.render_thread.wait()  # Ensure the thread has finished
-            self.render_thread.deleteLater()  # Clean up the thread
+        # Quit and safely delete the thread if it's running
+        if self.render_thread.isRunning():
+            self.render_thread.quit()
+            self.render_thread.wait()
+            self.render_thread.deleteLater()
 
         # Reset the worker and thread references
         self.render_handler = None
