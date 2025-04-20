@@ -6,6 +6,12 @@ from pathlib import Path
 import subprocess
 import json
 
+# Get the directory of the project
+render_mate_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+
+# Add the render-mate directory to sys.path, so all modules inside render-mate can be found
+sys.path.append(render_mate_dir)
+
 # Importing third party modules
 from PySide2.QtWidgets import QApplication, QInputDialog, QMessageBox, QComboBox, QSpacerItem,QSizePolicy, QMainWindow, QProgressBar, QMenuBar, QWidget, QPushButton, QVBoxLayout,  QHBoxLayout, QLabel, QTableWidget, QFileDialog, QTableWidgetItem, QHeaderView
 from PySide2.QtGui import QPixmap, QIcon
