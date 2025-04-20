@@ -87,4 +87,4 @@ RenderMate includes several actions for each file:
 To start using RenderMate, ensure you have the following:
 - **The Foundry Nuke:** Installed on your system.
 - **RV Player:** Installed on your system to oens the rendered data directly in RV Player for preview .
-- **Python 3:** The tool is built with Python (PySide2 or PyQt5 for the UI).
+- **Python 3.9.7:** The tool is built with Python and PySide2.
