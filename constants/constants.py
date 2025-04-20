@@ -41,4 +41,3 @@ OPEN_DIR_ICON = OPEN_DIR_ICON.as_posix()
 
 RV_ICON = icons_path / 'rv_icon.png'
 RV_ICON = RV_ICON.as_posix()
-
