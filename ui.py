@@ -169,6 +169,7 @@ class RenderMate(QMainWindow):
         self.table_widget.setShowGrid(False)
         self.table_widget.setColumnCount(6)
         self.table_widget.setHorizontalHeaderLabels(["File Path", "File Name" , "Writes" , "Progress" , "Status" , "Launchers"]) 
+        self.table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
         
         # Set header behavior for property widget
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -391,10 +392,12 @@ class RenderMate(QMainWindow):
             file_names.append(os.path.basename(file))
 
         # Set the number of rows in the table to match the number of selected files
-        self.table_widget.setRowCount(len(file_paths))
+        # self.table_widget.setRowCount(len(file_paths))
 
         # Populate the table widget with file paths, names, and operation widgets
         for row in range(len(file_paths)):
+            self.table_widget.insertRow(row) 
+            
             file_path_item = QTableWidgetItem(file_paths[row])
             file_name_item = QTableWidgetItem(file_names[row])
 
