@@ -19,10 +19,10 @@ from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt , QSize, QTimer, QThread
 
 # Importing custom modules
-from constants.constants import NUKE_ICON, USER_ICON, ADD_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON, STOP_ICON, OPERATION_PLAY_ICON, OPERATION_STOP_ICON, OPEN_DIR_ICON, RV_ICON
-from modules.PathManager import PathManager
-from modules.NukeFileReader import GetNukeFileProperties
-from modules.Worker_thread import WorkerThread
+from modules.constants import NUKE_ICON, USER_ICON, ADD_ICON, REMOVE_ICON, REMOVE_SELECTED_ICON, PLAY_ICON, STOP_ICON, OPERATION_PLAY_ICON, OPERATION_STOP_ICON, OPEN_DIR_ICON, RV_ICON
+from modules.pathmanager import PathManager
+from modules.nukefilereader import GetNukeFileProperties
+from modules.worker_thread import WorkerThread
 
 
 class RenderMate(QMainWindow):
