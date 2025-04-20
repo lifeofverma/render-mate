@@ -373,12 +373,7 @@ class RenderMate(QMainWindow):
         """
 
         # Open file dialog to select Nuke files
-        self.selected_files = list(QFileDialog.getOpenFileNames(
-            None, 
-            "Select Nuke Files", 
-            r"D:\GamutX\Render_Mate\Nuke_files", 
-            "Nuke Files (*.nk)"
-        )[0])
+        self.selected_files = list(QFileDialog.getOpenFileNames(None, "Select Nuke Files","", "Nuke Files (*.nk)")[0])
 
         if not self.selected_files:
             return 
