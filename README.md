@@ -9,7 +9,7 @@ This tool is especially helpful for freelancers and small teams, offering a loca
 
 ## 🎥 Demo Video
 
-![Demo](assets/sample.gif)
+![Render-Mate Demo](assets/sample.gif)
 
 ## **Goals**
 The primary goal of RenderMate is to simplify and automate the rendering process for Nuke artists. It is designed to:
