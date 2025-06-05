@@ -6,7 +6,14 @@ RenderMate is a tool designed to streamline the rendering process for multiple N
 
 This tool is especially helpful for freelancers and small teams, offering a local render-farm-style experience, empowering their rendering processes, and boosting productivity.
 
----
+
+## 🎥 Demo Video
+
+<video width="600" controls>
+  <source src="assets/sample.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 
 ## **Goals**
 The primary goal of RenderMate is to simplify and automate the rendering process for Nuke artists. It is designed to:
